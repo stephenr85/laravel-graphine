@@ -158,7 +158,9 @@ final class InMemoryDriver extends AbstractDriver implements ComputeStore, Gover
             foreach ($dist as $id => $d) {
                 if (! isset($settled[$id]) && $d < $best) {
                     $best = $d;
-                    $u = $id;
+                    // PHP coerces a numeric-string array key to int; node ids are
+                    // strings on NodeId, so normalise before it flows into NodeId::of().
+                    $u = (string) $id;
                 }
             }
             if ($u === null) {
@@ -270,7 +272,10 @@ final class InMemoryDriver extends AbstractDriver implements ComputeStore, Gover
         /** @var array<string,true> $seenCycle */
         $seenCycle = [];
 
-        $visit = function (string $u, array $stack) use (&$visit, &$colour, &$cycles, &$seenCycle): void {
+        $visit = function (int|string $u, array $stack) use (&$visit, &$colour, &$cycles, &$seenCycle): void {
+            // A numeric-string node id arrives as an int array key; normalise so the
+            // stack, colour lookups and NodeId::of() all see the string form.
+            $u = (string) $u;
             $colour[$u] = 1;
             $stack[] = $u;
             foreach ($this->edges as $edge) {
