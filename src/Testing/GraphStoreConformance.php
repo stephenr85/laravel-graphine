@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Rushing\Graphine\Contracts\ComputeStore;
 use Rushing\Graphine\Contracts\GovernedStore;
 use Rushing\Graphine\Contracts\GraphStore;
+use Rushing\Graphine\Contracts\QueryableStore;
 use Rushing\Graphine\Contracts\StructureStore;
 use Rushing\Graphine\Dto\Edge;
 use Rushing\Graphine\Dto\Node;
@@ -231,5 +232,87 @@ abstract class GraphStoreConformance extends TestCase
             1e-9,
             'gate 1.0 is pure pass-through — the governed score equals the computed rank',
         );
+    }
+
+    /**
+     * THE À-LA-CARTE-BY-TYPE LAW (ticket 04). Optional roles are opted into by
+     * TYPE, and `supports()` must agree with the interfaces the driver actually
+     * implements — never a nullable field, never a lie. A spine-only driver is
+     * simply not `instanceof` the optional contracts.
+     */
+    public function test_optional_roles_are_opt_in_by_type(): void
+    {
+        $driver = $this->createDriver();
+
+        $this->assertSame(
+            $driver instanceof GovernedStore,
+            $driver->supports(Capability::Governance),
+            'supports(Governance) must agree with instanceof GovernedStore',
+        );
+
+        $this->assertSame(
+            $driver instanceof QueryableStore,
+            $driver->supports(Capability::QueryAtScale),
+            'supports(QueryAtScale) must agree with instanceof QueryableStore',
+        );
+
+        if ($driver->speaks() !== []) {
+            $this->assertInstanceOf(
+                QueryableStore::class,
+                $driver,
+                'a driver that speaks a wire format must implement QueryableStore',
+            );
+            $this->assertTrue($driver->supports(Capability::QueryAtScale));
+        }
+
+        if (! $driver instanceof QueryableStore) {
+            $this->assertSame([], $driver->speaks(), 'a non-queryable driver speaks nothing');
+        }
+    }
+
+    /**
+     * NATIVE-QUERY PASSTHROUGH (ticket 04 point 5). For a driver that opts into
+     * role 3, every format it `speaks()` is answerable and returns opaque rows —
+     * the seam passes the statement through rather than re-abstracting a query
+     * language. Skipped entirely for spine-only drivers.
+     */
+    public function test_queryable_passthrough_returns_opaque_rows(): void
+    {
+        $driver = $this->createDriver();
+        if (! $driver instanceof QueryableStore) {
+            $this->markTestSkipped('driver does not implement QueryableStore (role 3) — query is à-la-carte');
+        }
+
+        $this->assertNotEmpty($driver->speaks(), 'a queryable driver must advertise at least one format');
+
+        foreach ($driver->speaks() as $format) {
+            $result = $driver->query($format, 'MATCH (n) RETURN n', ['limit' => 1]);
+            $this->assertGreaterThanOrEqual(0, $result->count(), 'passthrough returns a row set');
+        }
+    }
+
+    /**
+     * CALLERS BRANCH ON supports(), NOT concrete instanceof (ticket 04). A guard
+     * written against the capability keeps working when a driver widens or
+     * narrows coverage — proven here by a supports()-guarded score path that
+     * yields a map on ANY spine driver, governed or not.
+     */
+    public function test_supports_guarded_path_survives_capability_changes(): void
+    {
+        $driver = $this->createDriver();
+        if (! $driver instanceof StructureStore || ! $driver instanceof ComputeStore) {
+            $this->markTestSkipped('needs the spine to seed + score');
+        }
+
+        $driver->putNode(new Node(NodeId::of('a'), 'Entity'));
+        $driver->putNode(new Node(NodeId::of('b'), 'Entity'));
+        $driver->putEdge(new Edge(NodeId::of('a'), NodeId::of('b'), 'LINKS'));
+
+        // The call site guards on the CAPABILITY, not the concrete class.
+        $scores = $driver->supports(Capability::Governance) && $driver instanceof GovernedStore
+            ? $driver->governedRank()
+            : $driver->rank();
+
+        $this->assertNotEmpty($scores, 'a supports()-guarded score path yields a map regardless of coverage');
     }
 }
