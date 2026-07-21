@@ -159,31 +159,77 @@ abstract class GraphStoreConformance extends TestCase
     }
 
     /**
-     * THE GOVERNANCE-AS-GATING LAW (ticket 03). Only for drivers that opt into
-     * role 4 by TYPE — this is the type-level opt-in that replaced the nullable
-     * `?Coherence` field. A gate of 0.0 silences a node no matter how it
-     * computes; that is the whole evidenced contract (numero asserted_weight).
+     * THE GOVERNANCE-AS-GATING LAW (ticket 03) — a CENTRAL node silenced. Only
+     * for drivers that opt into role 4 by TYPE (the type-level opt-in that
+     * replaced the nullable `?Coherence` field). A gate of 0.0 silences a node
+     * no matter how central it computes — the whole evidenced contract (numero
+     * asserted_weight). We build a hub with high centrality, confirm it tops the
+     * ungoverned rank, then gate it to 0.0 and assert it drops out entirely.
      */
-    public function test_governance_gate_of_zero_silences_a_node(): void
+    public function test_governance_gate_of_zero_silences_a_central_node(): void
     {
         $driver = $this->createDriver();
         if (! $driver instanceof GovernedStore) {
             $this->markTestSkipped('driver does not implement GovernedStore (role 4) — governance is à-la-carte');
         }
-        if (! $driver instanceof StructureStore) {
-            $this->markTestSkipped('needs StructureStore to seed nodes');
+        if (! $driver instanceof StructureStore || ! $driver instanceof ComputeStore) {
+            $this->markTestSkipped('needs the StructureStore+ComputeStore spine to seed + rank');
         }
 
         $this->assertTrue($driver->supports(Capability::Governance));
 
-        $driver->putNode(new Node(NodeId::of('kept'), 'Entity'));
-        $driver->putNode(new Node(NodeId::of('silenced'), 'Entity'));
-        $driver->putEdge(new Edge(NodeId::of('kept'), NodeId::of('silenced'), 'LINKS'));
+        // A star: three leaves all point at the hub → the hub is the most central.
+        foreach (['hub', 'l1', 'l2', 'l3'] as $id) {
+            $driver->putNode(new Node(NodeId::of($id), 'Entity'));
+        }
+        foreach (['l1', 'l2', 'l3'] as $leaf) {
+            $driver->putEdge(new Edge(NodeId::of($leaf), NodeId::of('hub'), 'LINKS'));
+        }
 
-        $driver->assertGovernance(NodeId::of('silenced'), 0.0);
+        $rank = $driver->rank();
+        $this->assertGreaterThan(
+            max($rank['l1'], $rank['l2'], $rank['l3']),
+            $rank['hub'],
+            'the hub must be the most central node before governance',
+        );
+
+        $driver->assertGovernance(NodeId::of('hub'), 0.0);
 
         $governed = $driver->governedRank();
-        $this->assertArrayNotHasKey('silenced', $governed, 'gate 0.0 must drop the node');
-        $this->assertArrayHasKey('kept', $governed, 'un-gated node must survive (pass-through gate 1.0)');
+        $this->assertArrayNotHasKey('hub', $governed, 'gate 0.0 must silence even the most central node');
+        $this->assertArrayHasKey('l1', $governed, 'un-gated nodes survive (pass-through gate 1.0)');
+    }
+
+    /**
+     * THE PASS-THROUGH HALF OF THE LAW (ticket 03): `gate = 1` leaves compute
+     * unchanged. An ungoverned (or explicitly gate-1) node's governed score
+     * equals its ungoverned rank — governance modulates, it does not recompute.
+     */
+    public function test_governance_gate_of_one_leaves_compute_unchanged(): void
+    {
+        $driver = $this->createDriver();
+        if (! $driver instanceof GovernedStore) {
+            $this->markTestSkipped('driver does not implement GovernedStore (role 4) — governance is à-la-carte');
+        }
+        if (! $driver instanceof StructureStore || ! $driver instanceof ComputeStore) {
+            $this->markTestSkipped('needs the StructureStore+ComputeStore spine to seed + rank');
+        }
+
+        $driver->putNode(new Node(NodeId::of('a'), 'Entity'));
+        $driver->putNode(new Node(NodeId::of('b'), 'Entity'));
+        $driver->putEdge(new Edge(NodeId::of('a'), NodeId::of('b'), 'LINKS'));
+
+        $driver->assertGovernance(NodeId::of('a'), 1.0);
+
+        $rank = $driver->rank();
+        $governed = $driver->governedRank();
+
+        $this->assertArrayHasKey('a', $governed);
+        $this->assertEqualsWithDelta(
+            $rank['a'],
+            $governed['a'],
+            1e-9,
+            'gate 1.0 is pure pass-through — the governed score equals the computed rank',
+        );
     }
 }

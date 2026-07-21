@@ -344,11 +344,15 @@ final class InMemoryDriver extends AbstractDriver implements ComputeStore, Gover
     /** @return list<string> */
     public function reason(NodeId $node): array
     {
-        // Reference driver performs NO inference (not Capability::Reasoning) — it
-        // returns only the directly-asserted class, if any. A real reasoner is a
-        // consumer-side backend behind a process boundary, never linked here.
-        $asserted = $this->classes[$node->value] ?? null;
-
-        return $asserted === null ? [] : [$asserted];
+        // The package ships the delegation SIGNATURE only — never an in-process
+        // reasoner (the seam guard forbids linking one). Inference is always a
+        // consumer-side backend behind a process boundary (owlready2 / external
+        // triplestore / Postgres rules), and the backend is UNDECIDED (gate #4).
+        // So the reference driver throws rather than fake inference; it does not
+        // advertise Capability::Reasoning, and callers must gate on supports().
+        throw new \RuntimeException(
+            'InMemoryDriver::reason() ships the delegation signature only: '
+            .'reasoning backend UNDECIDED (gate #4), and no reasoner may be linked in-process.'
+        );
     }
 }
