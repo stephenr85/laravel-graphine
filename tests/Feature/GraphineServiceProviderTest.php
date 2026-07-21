@@ -28,7 +28,7 @@ it('merges package config with the in-memory default', function () {
 it('lets a consumer register its own driver and repoint the default', function () {
     config()->set('graphine.default', 'fake');
 
-    app(GraphStoreManager::class)->extend('fake', fn () => new InMemoryDriver());
+    app(GraphStoreManager::class)->extend('fake', fn () => new InMemoryDriver);
 
     // extend() adds a driver; resolving by name returns it.
     expect(app(GraphStoreManager::class)->driver('fake'))->toBeInstanceOf(InMemoryDriver::class);

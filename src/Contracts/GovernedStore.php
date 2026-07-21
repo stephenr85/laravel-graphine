@@ -55,7 +55,7 @@ interface GovernedStore
      * gated at 0.0 drops out regardless of its structural centrality. Results
      * are ranked descending. This is the governed twin of ComputeStore::rank().
      *
-     * @return array<string,float>  nodeId => governed score, ranked desc
+     * @return array<string,float> nodeId => governed score, ranked desc
      */
     public function governedRank(): array;
 
@@ -75,7 +75,7 @@ interface GovernedStore
      * graphine ships the delegation SIGNATURE, never an in-process reasoner —
      * advertise Capability::Reasoning only when a real backend is wired.
      *
-     * @return list<string>  inferred class IRIs
+     * @return list<string> inferred class IRIs
      */
     public function reason(NodeId $node): array;
 }

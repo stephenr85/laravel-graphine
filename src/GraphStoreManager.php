@@ -25,6 +25,7 @@ use Rushing\Graphine\Drivers\InMemoryDriver;
  * examples/app-drivers/ for worked, app-side examples.
  *
  * @method GraphStore driver(?string $driver = null)
+ *
  * @see docs 02 — "config picks the default driver; runtime extend() adds more"
  */
 final class GraphStoreManager extends Manager
@@ -38,6 +39,6 @@ final class GraphStoreManager extends Manager
 
     protected function createMemoryDriver(): GraphStore
     {
-        return new InMemoryDriver();
+        return new InMemoryDriver;
     }
 }

@@ -27,6 +27,7 @@ interface ComputeStore
 
     /**
      * PageRank-style importance ranking.
+     *
      * @return array<string,float> nodeId => score
      */
     public function rank(): array;

@@ -13,6 +13,7 @@ use Rushing\Graphine\Dto\Edge;
 use Rushing\Graphine\Dto\Node;
 use Rushing\Graphine\Dto\NodeId;
 use Rushing\Graphine\Enums\Capability;
+use Rushing\Graphine\Enums\TraversalDirection;
 
 /**
  * THE CONFORMANCE TEST-KIT — the seam by which any driver self-certifies.
@@ -87,6 +88,74 @@ abstract class GraphStoreConformance extends TestCase
         $ranks = $driver->rank();
         $this->assertArrayHasKey('a', $ranks);
         $this->assertIsFloat($ranks['a']);
+    }
+
+    /**
+     * TRAVERSAL REACHABILITY (role 2). A recursive descendants read reaches the
+     * transitive set along edge direction; the ancestors read reaches it the
+     * other way. Asserts the direction law, not a specific walk order.
+     */
+    public function test_traversal_reaches_transitive_neighbours(): void
+    {
+        $driver = $this->createDriver();
+        if (! $driver instanceof StructureStore) {
+            $this->markTestSkipped('driver does not implement StructureStore (role 1)');
+        }
+
+        foreach (['a', 'b', 'c'] as $id) {
+            $driver->putNode(new Node(NodeId::of($id), 'Entity'));
+        }
+        $driver->putEdge(new Edge(NodeId::of('a'), NodeId::of('b'), 'LINKS'));
+        $driver->putEdge(new Edge(NodeId::of('b'), NodeId::of('c'), 'LINKS'));
+
+        $descIds = array_map(
+            static fn (Node $n): string => $n->id->value,
+            $driver->neighbours(NodeId::of('a'), TraversalDirection::Descendants),
+        );
+        $this->assertContains('b', $descIds, 'descendant one hop away must be reached');
+        $this->assertContains('c', $descIds, 'descendant two hops away must be reached (recursive)');
+        $this->assertNotContains('a', $descIds, 'the origin is not its own neighbour');
+
+        $ancIds = array_map(
+            static fn (Node $n): string => $n->id->value,
+            $driver->neighbours(NodeId::of('c'), TraversalDirection::Ancestors),
+        );
+        $this->assertContains('b', $ancIds);
+        $this->assertContains('a', $ancIds, 'ancestor two hops away must be reached (recursive)');
+    }
+
+    /**
+     * PATH SHAPE (role 2). A shortest path is an ordered walk, source first,
+     * target last, with a non-negative accumulated cost and a length that
+     * matches the node count. Asserts the shape law across driver tiers.
+     */
+    public function test_shortest_path_has_source_first_target_last(): void
+    {
+        $driver = $this->createDriver();
+        if (! $driver instanceof ComputeStore) {
+            $this->markTestSkipped('driver does not implement ComputeStore (role 2)');
+        }
+        if (! $driver instanceof StructureStore) {
+            $this->markTestSkipped('needs StructureStore to seed nodes');
+        }
+
+        foreach (['a', 'b', 'c'] as $id) {
+            $driver->putNode(new Node(NodeId::of($id), 'Entity'));
+        }
+        $driver->putEdge(new Edge(NodeId::of('a'), NodeId::of('b'), 'LINKS', 1.0));
+        $driver->putEdge(new Edge(NodeId::of('b'), NodeId::of('c'), 'LINKS', 1.0));
+
+        $path = $driver->shortestPath(NodeId::of('a'), NodeId::of('c'));
+        $this->assertNotNull($path, 'a reachable target must yield a path');
+        $this->assertTrue($path->nodes[0]->equals(NodeId::of('a')), 'source first');
+        $this->assertTrue($path->nodes[count($path->nodes) - 1]->equals(NodeId::of('c')), 'target last');
+        $this->assertGreaterThanOrEqual(0.0, $path->cost, 'cost is non-negative');
+        $this->assertSame(count($path->nodes) - 1, $path->length(), 'length = edges walked');
+
+        $this->assertNull(
+            $driver->shortestPath(NodeId::of('c'), NodeId::of('a')),
+            'no directed path backwards → null',
+        );
     }
 
     /**

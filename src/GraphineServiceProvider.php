@@ -23,7 +23,7 @@ final class GraphineServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/graphine.php', 'graphine');
+        $this->mergeConfigFrom(__DIR__.'/../config/graphine.php', 'graphine');
 
         $this->app->singleton(GraphStoreManager::class, fn ($app) => new GraphStoreManager($app));
 
@@ -35,7 +35,7 @@ final class GraphineServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/../config/graphine.php' => config_path('graphine.php'),
+                __DIR__.'/../config/graphine.php' => config_path('graphine.php'),
             ], 'graphine-config');
         }
     }

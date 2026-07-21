@@ -17,6 +17,6 @@ final class InMemoryDriverConformanceTest extends GraphStoreConformance
 {
     protected function createDriver(): GraphStore
     {
-        return new InMemoryDriver();
+        return new InMemoryDriver;
     }
 }

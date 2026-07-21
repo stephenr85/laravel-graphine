@@ -34,7 +34,7 @@ use Rushing\Graphine\Enums\TraversalDirection;
  *
  * @see docs 01 §A — graphp/graph → in-memory driver
  */
-final class InMemoryDriver extends AbstractDriver implements StructureStore, ComputeStore, GovernedStore
+final class InMemoryDriver extends AbstractDriver implements ComputeStore, GovernedStore, StructureStore
 {
     /** @var array<string,Node> */
     private array $nodes = [];
@@ -84,49 +84,232 @@ final class InMemoryDriver extends AbstractDriver implements StructureStore, Com
         TraversalDirection $direction = TraversalDirection::Descendants,
         ?int $maxDepth = null,
     ): array {
-        // Reference impl: one-hop adjacency over the edge list. A production
-        // graphp-backed driver walks to $maxDepth; the reference stays shallow
-        // on purpose so the test-kit exercises the CONTRACT, not an algorithm.
+        // Recursive adjacency read — the transitive ancestors/descendants set,
+        // mirroring staudenmeir/laravel-adjacency-list's recursive relations
+        // (and a WITH RECURSIVE CTE). BFS bounded by $maxDepth; the visited set
+        // makes it cycle-safe, so $maxDepth = null means "all reachable".
+        $visited = [$of->value => true];
         $out = [];
-        foreach ($this->edges as $edge) {
-            $match = match ($direction) {
-                TraversalDirection::Descendants => $edge->from->equals($of),
-                TraversalDirection::Ancestors => $edge->to->equals($of),
-                TraversalDirection::Both => $edge->from->equals($of) || $edge->to->equals($of),
-            };
-            if ($match) {
-                $other = $edge->from->equals($of) ? $edge->to : $edge->from;
-                if ($n = $this->getNode($other)) {
-                    $out[] = $n;
+        /** @var list<array{NodeId,int}> $frontier */
+        $frontier = [[$of, 0]];
+
+        while ($frontier !== []) {
+            [$current, $depth] = array_shift($frontier);
+            if ($maxDepth !== null && $depth >= $maxDepth) {
+                continue;
+            }
+            foreach ($this->step($current, $direction) as $next) {
+                if (isset($visited[$next->value])) {
+                    continue;
                 }
+                $visited[$next->value] = true;
+                if ($node = $this->getNode($next)) {
+                    $out[] = $node;
+                }
+                $frontier[] = [$next, $depth + 1];
             }
         }
 
         return $out;
     }
 
+    /**
+     * One directed step from a node, honouring traversal direction.
+     *
+     * @return list<NodeId>
+     */
+    private function step(NodeId $from, TraversalDirection $direction): array
+    {
+        $next = [];
+        foreach ($this->edges as $edge) {
+            if ($direction !== TraversalDirection::Ancestors && $edge->from->equals($from)) {
+                $next[] = $edge->to;   // descend along the edge direction
+            }
+            if ($direction !== TraversalDirection::Descendants && $edge->to->equals($from)) {
+                $next[] = $edge->from;  // ascend against the edge direction
+            }
+        }
+
+        return $next;
+    }
+
     // --- ComputeStore (role 2) ---------------------------------------------
 
     public function shortestPath(NodeId $from, NodeId $to): ?Path
     {
-        // Reference stub: real impl delegates to graphp/graph Dijkstra.
-        return new Path(nodes: [$from, $to], cost: 1.0);
+        // Dijkstra over the directed, weighted edge list. Real behaviour: a
+        // graphp-backed driver would delegate to its Dijkstra; the arrays here
+        // implement the same shortest-weighted-path law the test-kit asserts.
+        if ($this->getNode($from) === null || $this->getNode($to) === null) {
+            return null;
+        }
+
+        /** @var array<string,float> $dist */
+        $dist = [$from->value => 0.0];
+        /** @var array<string,?string> $prev */
+        $prev = [$from->value => null];
+        /** @var array<string,true> $settled */
+        $settled = [];
+
+        while (true) {
+            // Pick the unsettled node with the smallest tentative distance.
+            $u = null;
+            $best = INF;
+            foreach ($dist as $id => $d) {
+                if (! isset($settled[$id]) && $d < $best) {
+                    $best = $d;
+                    $u = $id;
+                }
+            }
+            if ($u === null) {
+                break; // no reachable unsettled node left
+            }
+            if ($u === $to->value) {
+                break; // target settled — done
+            }
+            $settled[$u] = true;
+
+            foreach ($this->edges as $edge) {
+                if (! $edge->from->equals(NodeId::of($u))) {
+                    continue;
+                }
+                $v = $edge->to->value;
+                $alt = $dist[$u] + max(0.0, $edge->weight);
+                if (! isset($dist[$v]) || $alt < $dist[$v]) {
+                    $dist[$v] = $alt;
+                    $prev[$v] = $u;
+                }
+            }
+        }
+
+        if (! isset($dist[$to->value])) {
+            return null; // unreachable
+        }
+
+        // Reconstruct the node walk, source first.
+        $walk = [];
+        for ($at = $to->value; $at !== null; $at = $prev[$at] ?? null) {
+            array_unshift($walk, NodeId::of($at));
+        }
+
+        return new Path(nodes: $walk, cost: $dist[$to->value]);
     }
 
     /** @return array<string,float> */
     public function rank(): array
     {
-        // Reference stub: uniform placeholder for PageRank over the graph.
-        $n = max(1, count($this->nodes));
+        // Weighted PageRank over the topology. Real behaviour, deterministic:
+        // rank flows along out-edges proportional to weight; dangling nodes
+        // redistribute uniformly. This is the compute the governance gate then
+        // modulates (role 4), never fused with it.
+        $ids = array_keys($this->nodes);
+        $n = count($ids);
+        if ($n === 0) {
+            return [];
+        }
 
-        return array_fill_keys(array_keys($this->nodes), 1.0 / $n);
+        $damping = 0.85;
+        $base = (1.0 - $damping) / $n;
+
+        /** @var array<string,float> $rank */
+        $rank = array_fill_keys($ids, 1.0 / $n);
+
+        // Precompute weighted out-adjacency once.
+        /** @var array<string,array<string,float>> $out */
+        $out = array_fill_keys($ids, []);
+        /** @var array<string,float> $outSum */
+        $outSum = array_fill_keys($ids, 0.0);
+        foreach ($this->edges as $edge) {
+            $f = $edge->from->value;
+            $t = $edge->to->value;
+            if (! isset($rank[$f]) || ! isset($rank[$t])) {
+                continue; // edge referencing an unknown node
+            }
+            $w = max(0.0, $edge->weight);
+            $out[$f][$t] = ($out[$f][$t] ?? 0.0) + $w;
+            $outSum[$f] += $w;
+        }
+
+        for ($iter = 0; $iter < 40; $iter++) {
+            $next = array_fill_keys($ids, $base);
+            $dangling = 0.0;
+            foreach ($ids as $id) {
+                if ($outSum[$id] <= 0.0) {
+                    $dangling += $rank[$id];
+
+                    continue;
+                }
+                foreach ($out[$id] as $t => $w) {
+                    $next[$t] += $damping * $rank[$id] * ($w / $outSum[$id]);
+                }
+            }
+            // Dangling mass spreads uniformly.
+            if ($dangling > 0.0) {
+                $share = $damping * $dangling / $n;
+                foreach ($ids as $id) {
+                    $next[$id] += $share;
+                }
+            }
+            $rank = $next;
+        }
+
+        return $rank;
     }
 
     /** @return list<Path> */
     public function detectCycles(): array
     {
-        // Reference stub: real impl uses graphp cycle detection.
-        return [];
+        // Colour-marked DFS: a back-edge to a node on the current stack is a
+        // cycle. Returns one Path per distinct cycle found (nodes on the cycle,
+        // cyclic = true). Real behaviour over the directed edge list.
+        $ids = array_keys($this->nodes);
+        /** @var array<string,int> $colour 0=white 1=grey 2=black */
+        $colour = array_fill_keys($ids, 0);
+        /** @var list<Path> $cycles */
+        $cycles = [];
+        /** @var array<string,true> $seenCycle */
+        $seenCycle = [];
+
+        $visit = function (string $u, array $stack) use (&$visit, &$colour, &$cycles, &$seenCycle): void {
+            $colour[$u] = 1;
+            $stack[] = $u;
+            foreach ($this->edges as $edge) {
+                if (! $edge->from->equals(NodeId::of($u))) {
+                    continue;
+                }
+                $v = $edge->to->value;
+                if (! isset($colour[$v])) {
+                    continue;
+                }
+                if ($colour[$v] === 1) {
+                    // Back-edge → extract the cycle slice from the stack.
+                    $pos = array_search($v, $stack, strict: true);
+                    if ($pos !== false) {
+                        $slice = array_slice($stack, $pos);
+                        $key = implode('>', $slice);
+                        if (! isset($seenCycle[$key])) {
+                            $seenCycle[$key] = true;
+                            $cycles[] = new Path(
+                                nodes: array_map(static fn (string $id) => NodeId::of($id), $slice),
+                                cost: 0.0,
+                                cyclic: true,
+                            );
+                        }
+                    }
+                } elseif ($colour[$v] === 0) {
+                    $visit($v, $stack);
+                }
+            }
+            $colour[$u] = 2;
+        };
+
+        foreach ($ids as $id) {
+            if ($colour[$id] === 0) {
+                $visit($id, []);
+            }
+        }
+
+        return $cycles;
     }
 
     // --- GovernedStore (role 4 — governance-as-gating) ----------------------
