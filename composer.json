@@ -1,0 +1,59 @@
+{
+    "name": "rushing/laravel-graphine",
+    "description": "A pluggable Laravel graph-substrate seam: the GraphStore contract + role sub-contracts + value types + one in-memory reference driver + a conformance test-kit. Ships zero persistence drivers — real drivers are the consumer's, authored over its own wheel.",
+    "keywords": ["laravel", "graph", "knowledge-graph", "substrate", "seam", "gql", "driver", "manager"],
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Stephen Rushing",
+            "email": "stephenr85@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "illuminate/contracts": "^11.0 || ^12.0 || ^13.0",
+        "illuminate/support": "^11.0 || ^12.0 || ^13.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.0",
+        "nikic/php-parser": "^5.0",
+        "orchestra/testbench": "^9.0 || ^10.0",
+        "pestphp/pest": "^3.0"
+    },
+    "suggest": {
+        "graphp/graph": "MIT — pure-PHP in-memory graph algorithms behind the reference driver (roles 1/2)",
+        "staudenmeir/laravel-adjacency-list": "MIT — recursive-CTE trees AND graphs; for a CONSUMER's relational driver (roles 1-3), not shipped here",
+        "laudis/neo4j-php-client": "MIT Bolt client → Neo4j server behind a network boundary; for a consumer's Neo4j driver (role 3)",
+        "sweetrdf/easyrdf": "BSD-3 — SPARQL 1.1 client; for a consumer's RDF-query driver (role 3)",
+        "nikic/php-parser": "BSD-3 — AST scanner behind the seam guard a consumer runs over its own App\\Graph\\Drivers"
+    },
+    "autoload": {
+        "psr-4": {
+            "Rushing\\Graphine\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Rushing\\Graphine\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Rushing\\Graphine\\GraphineServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "pint": "@php -d memory_limit=512M vendor/bin/pint",
+        "test": "@php vendor/bin/pest"
+    }
+}
