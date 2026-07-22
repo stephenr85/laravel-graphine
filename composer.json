@@ -2,7 +2,7 @@
     "name": "rushing/laravel-graphine",
     "description": "A pluggable Laravel graph-substrate seam: the GraphStore contract + role sub-contracts + value types + one in-memory reference driver + a conformance test-kit. Ships zero persistence drivers — real drivers are the consumer's, authored over its own wheel.",
     "keywords": ["laravel", "graph", "knowledge-graph", "substrate", "seam", "gql", "driver", "manager"],
-    "license": "proprietary",
+    "license": "MIT",
     "authors": [
         {
             "name": "Stephen Rushing",

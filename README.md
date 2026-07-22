@@ -139,4 +139,5 @@ tests/                          the reference driver certifies itself
 
 ## License
 
-Proprietary. © Stephen Rushing.
+MIT. © Stephen Rushing. A reusable, unopinionated graph-substrate seam — free to build
+on; the persistence drivers (and any composed engine above them) are the consumer's.
