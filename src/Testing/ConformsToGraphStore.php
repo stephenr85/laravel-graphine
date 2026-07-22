@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rushing\Graphine\Testing;
 
 use Rushing\Graphine\Contracts\ComputeStore;
+use Rushing\Graphine\Contracts\EnumerableStore;
 use Rushing\Graphine\Contracts\GovernedStore;
 use Rushing\Graphine\Contracts\GraphStore;
 use Rushing\Graphine\Contracts\QueryableStore;
@@ -256,6 +257,12 @@ trait ConformsToGraphStore
             'supports(QueryAtScale) must agree with instanceof QueryableStore',
         );
 
+        $this->assertSame(
+            $driver instanceof EnumerableStore,
+            $driver->supports(Capability::Enumerate),
+            'supports(Enumerate) must agree with instanceof EnumerableStore',
+        );
+
         if ($driver->speaks() !== []) {
             $this->assertInstanceOf(
                 QueryableStore::class,
@@ -289,6 +296,46 @@ trait ConformsToGraphStore
             $result = $driver->query($format, 'MATCH (n) RETURN n', ['limit' => 1]);
             $this->assertGreaterThanOrEqual(0, $result->count(), 'passthrough returns a row set');
         }
+    }
+
+    /**
+     * WHOLE-SNAPSHOT ENUMERATION (ticket 18). For a driver that opts into role 5,
+     * `nodes()`/`edges()` dump the FULL bounded snapshot — every seeded node and
+     * every seeded edge, the anchorless read a visualization needs. Asserts the
+     * dump agrees with what was declared, not an order. Skipped for drivers that
+     * decline the role (a traverse-native store that cannot cheaply enumerate).
+     */
+    public function test_enumerable_dump_agrees_with_the_seeded_spine(): void
+    {
+        $driver = $this->createDriver();
+        if (! $driver instanceof EnumerableStore) {
+            $this->markTestSkipped('driver does not implement EnumerableStore (role 5) — enumeration is à-la-carte');
+        }
+        if (! $driver instanceof StructureStore) {
+            $this->markTestSkipped('needs StructureStore to seed the snapshot');
+        }
+
+        $this->assertTrue($driver->supports(Capability::Enumerate));
+
+        foreach (['a', 'b', 'c'] as $id) {
+            $driver->putNode(new Node(NodeId::of($id), 'Entity'));
+        }
+        $driver->putEdge(new Edge(NodeId::of('a'), NodeId::of('b'), 'LINKS'));
+        $driver->putEdge(new Edge(NodeId::of('b'), NodeId::of('c'), 'LINKS'));
+
+        // The node dump is the full seeded set — a whole-graph read, not a walk
+        // from an anchor (which would miss the anchorless viz modes ticket 18 exists for).
+        $nodeIds = array_map(static fn (Node $n): string => $n->id->value, $driver->nodes());
+        sort($nodeIds);
+        $this->assertSame(['a', 'b', 'c'], $nodeIds, 'nodes() dumps every node in the bounded snapshot');
+
+        // The edge dump is the full seeded edge set, endpoints preserved.
+        $edgePairs = array_map(
+            static fn (Edge $e): string => $e->from->value.'->'.$e->to->value,
+            $driver->edges(),
+        );
+        sort($edgePairs);
+        $this->assertSame(['a->b', 'b->c'], $edgePairs, 'edges() dumps every edge in the bounded snapshot');
     }
 
     /**

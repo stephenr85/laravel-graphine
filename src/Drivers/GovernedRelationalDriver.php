@@ -38,6 +38,7 @@ class GovernedRelationalDriver extends RelationalDriver implements GovernedStore
         Capability::Declare,     // role 1
         Capability::Compute,     // role 2
         Capability::Governance,  // role 4 — gating loaded from the source
+        Capability::Enumerate,   // role 5 — inherited from RelationalDriver; the snapshot dumps free
         // NOT Capability::Reasoning — no in-process reasoner is linked.
     ];
 

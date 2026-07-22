@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rushing\Graphine\Drivers;
 
 use Rushing\Graphine\Contracts\ComputeStore;
+use Rushing\Graphine\Contracts\EnumerableStore;
 use Rushing\Graphine\Contracts\GovernedStore;
 use Rushing\Graphine\Contracts\StructureStore;
 use Rushing\Graphine\Dto\Edge;
@@ -34,7 +35,7 @@ use Rushing\Graphine\Enums\TraversalDirection;
  *
  * @see docs 01 §A — graphp/graph → in-memory driver
  */
-final class InMemoryDriver extends AbstractDriver implements ComputeStore, GovernedStore, StructureStore
+final class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableStore, GovernedStore, StructureStore
 {
     /** @var array<string,Node> */
     private array $nodes = [];
@@ -53,6 +54,7 @@ final class InMemoryDriver extends AbstractDriver implements ComputeStore, Gover
         Capability::Declare,     // role 1
         Capability::Compute,     // role 2
         Capability::Governance,  // role 4 — gating is REAL in-memory
+        Capability::Enumerate,   // role 5 — the snapshot IS the store, so the dump is free
         // NOT Capability::Reasoning — reference driver performs no inference.
     ];
 
@@ -76,6 +78,20 @@ final class InMemoryDriver extends AbstractDriver implements ComputeStore, Gover
     public function getNode(NodeId $id): ?Node
     {
         return $this->nodes[$id->value] ?? null;
+    }
+
+    // --- EnumerableStore (role 5) — dump the whole snapshot ----------------
+
+    /** @return list<Node> */
+    public function nodes(): array
+    {
+        return array_values($this->nodes);
+    }
+
+    /** @return list<Edge> */
+    public function edges(): array
+    {
+        return $this->edges;
     }
 
     /** @return list<Node> */

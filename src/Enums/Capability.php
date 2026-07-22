@@ -29,6 +29,15 @@ enum Capability: string
     case QueryAtScale = 'query_at_scale';
 
     /**
+     * Role 5 — ENUMERATE the whole bounded snapshot as a node+edge dump (ticket
+     * 18): the anchorless read a visualization needs when there is no single
+     * NodeId to hand `neighbours()`. The relational family serves it free (the
+     * spine already holds the snapshot); a traverse-native driver over an
+     * unbounded store declines it. Optional, à-la-carte-by-type.
+     */
+    case Enumerate = 'enumerate';
+
+    /**
      * Role 4 — GOVERNANCE-AS-GATING (ticket 03): a host-asserted scalar gate
      * modulates role-2 compute output (`score = gate · computed`). Off the
      * structural spine; never bitemporal/locality (those had zero consumers and

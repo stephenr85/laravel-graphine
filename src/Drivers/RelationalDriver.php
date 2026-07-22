@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rushing\Graphine\Drivers;
 
 use Rushing\Graphine\Contracts\ComputeStore;
+use Rushing\Graphine\Contracts\EnumerableStore;
 use Rushing\Graphine\Contracts\GraphSource;
 use Rushing\Graphine\Contracts\StructureStore;
 use Rushing\Graphine\Dto\Edge;
@@ -41,7 +42,7 @@ use Rushing\Graphine\Enums\TraversalDirection;
  * re-hydrates fresh; a pure read-only consumer never invalidates and pays the
  * hydration cost once.
  */
-class RelationalDriver extends AbstractDriver implements ComputeStore, StructureStore
+class RelationalDriver extends AbstractDriver implements ComputeStore, EnumerableStore, StructureStore
 {
     /** The mandatory spine — the in-memory reference driver holds the snapshot. */
     protected InMemoryDriver $spine;
@@ -52,6 +53,7 @@ class RelationalDriver extends AbstractDriver implements ComputeStore, Structure
     protected array $capabilities = [
         Capability::Declare,   // role 1
         Capability::Compute,   // role 2
+        Capability::Enumerate, // role 5 — the bounded snapshot dumps free from the spine
         // NO Governance / QueryAtScale — the governed member adds role 4 by type.
     ];
 
@@ -95,6 +97,20 @@ class RelationalDriver extends AbstractDriver implements ComputeStore, Structure
         ?int $maxDepth = null,
     ): array {
         return $this->spine()->neighbours($of, $direction, $maxDepth);
+    }
+
+    // --- EnumerableStore (role 5) — dump the hydrated snapshot ---------------
+
+    /** @return list<Node> */
+    public function nodes(): array
+    {
+        return $this->spine()->nodes();
+    }
+
+    /** @return list<Edge> */
+    public function edges(): array
+    {
+        return $this->spine()->edges();
     }
 
     // --- ComputeStore (role 2) — delegate to the snapshot --------------------

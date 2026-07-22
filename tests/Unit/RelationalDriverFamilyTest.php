@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rushing\Graphine\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
+use Rushing\Graphine\Contracts\EnumerableStore;
 use Rushing\Graphine\Contracts\GovernedStore;
 use Rushing\Graphine\Contracts\QueryableStore;
 use Rushing\Graphine\Drivers\GovernedRelationalDriver;
@@ -55,6 +56,10 @@ final class RelationalDriverFamilyTest extends TestCase
             $this->assertNotInstanceOf(QueryableStore::class, $driver);
             $this->assertFalse($driver->supports(Capability::QueryAtScale));
             $this->assertSame([], $driver->speaks());
+
+            // Both members enumerate (role 5) — the bounded snapshot dumps free.
+            $this->assertInstanceOf(EnumerableStore::class, $driver);
+            $this->assertTrue($driver->supports(Capability::Enumerate));
         }
     }
 
