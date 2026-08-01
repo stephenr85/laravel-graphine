@@ -26,6 +26,7 @@ the default driver is the in-memory reference driver.
 | Value types (`Node`, `Edge`, `NodeId`, `Path`, `QueryResult`) | A relational knowledge-graph driver |
 | Enums (`Capability`, `QueryFormat`, `TraversalDirection`) | A governance-gating driver |
 | **One in-memory reference driver** | AGE / Neo4j / heavy-compute backends |
+| **Pure algorithm kernels** (`Algorithms\` — Kahn, Tarjan, components) | A heavy-compute driver (rustworkx) over a boundary |
 | **A conformance test-kit** (`Testing\GraphStoreConformance`) | Each driver's storage, gate semantics, wire language |
 
 ## The seam in one picture
@@ -80,6 +81,30 @@ never re-abstracts the language; the adopted format wheels (GQL / openCypher /
 SPARQL) are named, never wrapped. A pure-relational driver satisfies the
 mandatory spine without speaking any wire language.
 
+## Algorithms — pure kernels, usable without a store
+
+`Rushing\Graphine\Algorithms\*` are stateless functions over plain arrays: a
+node-id list plus a **successor adjacency** map (`$adjacency[$u]` lists every `v`
+with an edge `u → v`). They touch no `Node`, `Edge`, or driver, so a caller that
+already holds an adjacency map runs them directly — no store, no service
+provider:
+
+- `TopologicalSort::kahn()` → `TopologicalOrder{sorted, cyclic}`. Kahn's order,
+  sources first. A cycle is **reported** in `cyclic`, never thrown — the caller
+  chooses whether to warn, drop, or fail. `splicewire/laravel-beam-sync` uses it
+  exactly this way to order a dependency cone and degrade on a cycle.
+- `StronglyConnectedComponents::tarjan()` → each SCC as a member list. A singleton
+  is not proof of acyclicity — a self-loop is a cyclic singleton; check the edge.
+- `ConnectedComponents::compute()` → weakly-connected components (edges read
+  undirected).
+
+Role 2 surfaces the ordering on the seam as well: `ComputeStore::topologicalSort()`
+runs the same kernel over a driver's own topology. So a store consumer reaches it
+through the contract and a bare caller reaches the kernel directly — one
+implementation, two entry points. These kernels are the only code here that
+depends on no graphine abstraction; they live in the package because the
+reference driver and its consumers both need them.
+
 ## Registering your own driver
 
 The app resolves the **contract**, never a concrete driver:
@@ -129,6 +154,7 @@ nothing, so it always passes.
 src/
 ├── GraphStoreManager.php       Manager-driver hub — default 'memory' + extend()
 ├── GraphineServiceProvider.php
+├── Algorithms/                 Pure kernels — Kahn topo-sort, Tarjan SCC, components (no store)
 ├── Contracts/                  GraphStore + 4 role sub-contracts
 ├── Drivers/                    AbstractDriver + the ONE reference driver (InMemoryDriver)
 ├── Dto/                        Node, Edge (pure topology), NodeId, Path, QueryResult (readonly)
