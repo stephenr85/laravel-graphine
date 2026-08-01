@@ -13,11 +13,11 @@ it('accepts a classification but ships only the reasoning delegation signature',
     $driver->classify(NodeId::of('n1'), 'https://example.org/onto#Regulation');
 
     // ...but the reference driver never advertises reasoning and never links a
-    // reasoner in-process: reason() throws carrying trigger #4.
+    // reasoner in-process: reason() throws.
     expect($driver->supports(Capability::Reasoning))->toBeFalse();
 
     $driver->reason(NodeId::of('n1'));
-})->throws(RuntimeException::class, 'gate #4');
+})->throws(RuntimeException::class, 'no reasoner may be linked in-process');
 
 it('advertises governance and gates compute without touching structural weight', function () {
     $driver = new InMemoryDriver;

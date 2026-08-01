@@ -382,12 +382,12 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
         // The package ships the delegation SIGNATURE only — never an in-process
         // reasoner (the seam guard forbids linking one). Inference is always a
         // consumer-side backend behind a process boundary (owlready2 / external
-        // triplestore / Postgres rules), and the backend is UNDECIDED (gate #4).
-        // So the reference driver throws rather than fake inference; it does not
+        // triplestore / Postgres rules), which the reference driver deliberately
+        // leaves unchosen. So it throws rather than fake inference; it does not
         // advertise Capability::Reasoning, and callers must gate on supports().
         throw new \RuntimeException(
             'InMemoryDriver::reason() ships the delegation signature only: '
-            .'reasoning backend UNDECIDED (gate #4), and no reasoner may be linked in-process.'
+            .'the reasoning backend is a consumer-side choice, and no reasoner may be linked in-process.'
         );
     }
 }

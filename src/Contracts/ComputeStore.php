@@ -13,7 +13,7 @@ use Rushing\Graphine\Algorithms\TopologicalSort;
  * computation. Two implementation tiers satisfy this same interface:
  *   - the package's in-memory reference driver (graphp/graph) — fits in memory.
  *   - a consumer's Python/rustworkx driver — heavy compute over a PROCESS
- *     BOUNDARY (Capability::HeavyCompute). ⚠️ ops cost UNMEASURED — gate #2;
+ *     BOUNDARY (Capability::HeavyCompute). ⚠️ ops cost UNMEASURED;
  *     authored app-side (see examples/app-drivers/PythonComputeDriver).
  */
 interface ComputeStore

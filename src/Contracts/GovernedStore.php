@@ -8,10 +8,9 @@ namespace Rushing\Graphine\Contracts;
  *
  * The role-4 actually found in practice is NOT bitemporal
  * coherence — it is a host-asserted scalar that GATES role-2 compute output.
- * The prototype's `Coherence`/`Bitemporal`/`Locality` DTOs had zero consumers
- * and were cut; so was the `?Coherence` field on Node/Edge (it was the exact
- * anti-pattern numero's doctrine forbids — governance leaking into the
- * structural spine).
+ * Earlier `Coherence`/`Bitemporal`/`Locality` DTOs had zero consumers and were
+ * cut; so was the `?Coherence` field on Node/Edge — the exact anti-pattern this
+ * contract forbids: governance leaking into the structural spine.
  *
  * Two load-bearing rules this contract encodes:
  *   1. The gate is a HOST-SIDE HINT. graphine guarantees only that it modulates

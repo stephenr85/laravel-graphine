@@ -13,8 +13,8 @@ use Rushing\Graphine\Contracts\NodeIdContract;
  * relationships and role-2 (Dijkstra / weighted centrality) consumes them. It
  * is emphatically NOT the governance gate — the two-weights separation:
  * `Edge.weight` *computes*, the governance gate
- * *gates the computed result*. Fusing them is the drift the doctrine forbids,
- * so the gate never appears on `Edge` — it lives only behind `GovernedStore`.
+ * *gates the computed result*. Fusing them is drift, so the gate never appears
+ * on `Edge` — it lives only behind `GovernedStore`.
  *
  * Roles: 1 (declare), 2 (weighted compute operand).
  */

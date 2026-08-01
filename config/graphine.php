@@ -24,7 +24,7 @@ return [
         'memory' => [
             // graphp/graph (MIT) — in-memory reference driver. Roles 1 + 2 + the
             // optional role-4 gating surface, so the conformance test-kit has a
-            // working oracle. Suggest-only dep; the prototype uses PHP arrays.
+            // working oracle. Suggest-only dep; the reference driver uses PHP arrays.
         ],
 
         // --- EXTENSION SEAM ---------------------------------------------------
