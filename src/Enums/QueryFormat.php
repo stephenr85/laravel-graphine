@@ -8,8 +8,6 @@ namespace Rushing\Graphine\Enums;
  * a driver advertises which it understands via GraphStore::supports().
  *
  * The format is the wheel — Graphine builds the wagon, never the language.
- *
- * @see docs 02-research-wheel-verdict.md — role 3 "ADOPT THE FORMAT"
  */
 enum QueryFormat: string
 {

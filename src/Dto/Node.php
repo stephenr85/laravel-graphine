@@ -6,11 +6,11 @@ namespace Rushing\Graphine\Dto;
  * A graph node — PURE TOPOLOGY. Cross-cutting value type accepted/returned by
  * every driver.
  *
- * Role-4 governance does NOT ride here (ticket 03). A node carries only its
+ * Role-4 governance does NOT ride here. A node carries only its
  * identity, its type/label, and a domain property bag. Whether a node is
  * "governed" is decided at the driver seam by type (`$driver instanceof
- * GovernedStore`), never by a nullable field on the node — the anti-drift rule
- * from numero's ADR-0011, generalized: the structural spine stays governance-
+ * GovernedStore`), never by a nullable field on the node — the anti-drift rule,
+ * generalized: the structural spine stays governance-
  * blind, and the governance gate is a host-side hint the engine never reads as
  * a schema key.
  *

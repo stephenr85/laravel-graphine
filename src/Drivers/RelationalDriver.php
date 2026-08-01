@@ -15,7 +15,7 @@ use Rushing\Graphine\Enums\Capability;
 use Rushing\Graphine\Enums\TraversalDirection;
 
 /**
- * THE GENERIC RELATIONAL (SNAPSHOT) DRIVER (ADR-0102).
+ * THE GENERIC RELATIONAL (SNAPSHOT) DRIVER.
  *
  * The storage-agnostic driver every relational consumer rides: it hydrates a
  * {@see GraphSource} into the in-memory spine ONCE and delegates every read and
@@ -23,20 +23,19 @@ use Rushing\Graphine\Enums\TraversalDirection;
  * the source SHAPE — an adjacency list and a triple store ride the same driver,
  * differing only in the source they are handed.
  *
- * Before ADR-0102 this class did not exist and each consumer (KG, Circuits,
- * numero) re-copied exactly this spine-delegation body app-side; ADR-0102 lifts
- * it into the package (taking `illuminate/database` for the source family) so the
- * copy-paste — including across a second repo — stops.
+ * Each relational consumer used to re-copy exactly this spine-delegation body
+ * app-side; the package now lifts it here (taking `illuminate/database` for the
+ * source family) so that copy-paste stops.
  *
  * Mandatory spine only: StructureStore (role 1) + ComputeStore (role 2). It is
  * deliberately NOT GovernedStore and NOT QueryableStore — a source that governs
  * selects {@see GovernedRelationalDriver} via {@see RelationalDriverFactory}, so
- * capability stays honest by TYPE (ADR-0100 §3 / build ticket 04), never relaxed
+ * capability stays honest by TYPE, never relaxed
  * to a runtime flag.
  *
  * HYDRATION IS LAZY + SNAPSHOT-CACHED. The spine is built on first read from the
- * source and reused (the "hydrate once" model — ADR-0102 decision 2 / ADR-0086
- * bounded snapshot). A subclass whose writes go to STORAGE (e.g. KG's
+ * source and reused (the "hydrate once" model — a bounded snapshot). A subclass
+ * whose writes go to STORAGE (e.g. KG's
  * rdf_triples) calls {@see invalidateSnapshot()} after a write so the next read
  * re-hydrates fresh; a pure read-only consumer never invalidates and pays the
  * hydration cost once.
@@ -85,7 +84,7 @@ class RelationalDriver extends AbstractDriver implements ComputeStore, Enumerabl
     public function getNode(NodeId $id): ?Node
     {
         // Snapshot-uniform: getNode is answered from the hydrated spine like every
-        // other read (ADR-0102 decision 2), never a bespoke live lookup.
+        // other read, never a bespoke live lookup.
         return $this->spine()->getNode($id);
     }
 
@@ -169,7 +168,7 @@ class RelationalDriver extends AbstractDriver implements ComputeStore, Enumerabl
     /**
      * Drop the cached snapshot so the next read re-hydrates from the source. A
      * consumer whose writes hit STORAGE (not the spine) calls this after a write
-     * so reads reflect it — preserving the pre-ADR-0102 "fresh snapshot per read"
+     * so reads reflect it — preserving "fresh snapshot per read"
      * correctness while a read-only consumer still hydrates only once.
      */
     protected function invalidateSnapshot(): void

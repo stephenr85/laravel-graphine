@@ -11,7 +11,7 @@ use Rushing\Graphine\Tests\TestCase;
 
 /**
  * AdjacencyListSource certifies through the driver family against the SHIPPED
- * conformance kit (ADR-0102 build ticket 13). The source points at EMPTY tables,
+ * conformance kit. The source points at EMPTY tables,
  * so the kit seeds its own fixtures through putNode/putEdge into the hydrated
  * spine — proving the config-driven source integrates with the family and passes
  * the same spine laws as every other driver, inside a real DB connection.

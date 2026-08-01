@@ -9,7 +9,7 @@ use Rushing\Graphine\Dto\NodeId;
 
 /**
  * An in-memory {@see GraphSource} for certifying the relational driver family
- * (ADR-0102) WITHOUT a database — the source's only job is to yield nodes/edges/
+ * WITHOUT a database — the source's only job is to yield nodes/edges/
  * gates, so an array-backed one exercises the family's hydrate-once contract
  * exactly like a real relational source would.
  *

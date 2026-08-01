@@ -13,7 +13,7 @@ abstract class TestCase extends Orchestra
     }
 
     /**
-     * The relational source family (ADR-0102) reads through illuminate/database,
+     * The relational source family reads through illuminate/database,
      * so DB-backed tests need a connection. An in-memory sqlite default keeps the
      * suite self-contained; tests that don't touch the DB are unaffected.
      */

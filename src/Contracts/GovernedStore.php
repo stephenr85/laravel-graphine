@@ -6,10 +6,9 @@ use Rushing\Graphine\Dto\NodeId;
 
 /**
  * ROLE 4 — GOVERNANCE-AS-GATING. Optional, à-la-carte sub-contract layered
- * OVER the mandatory StructureStore + ComputeStore spine (ticket 02 decision 3;
- * ticket 03 re-aim).
+ * OVER the mandatory StructureStore + ComputeStore spine.
  *
- * The role-4 the census actually found (numero, ADR-0011) is NOT bitemporal
+ * The role-4 actually found in practice is NOT bitemporal
  * coherence — it is a host-asserted scalar that GATES role-2 compute output.
  * The prototype's `Coherence`/`Bitemporal`/`Locality` DTOs had zero consumers
  * and were cut; so was the `?Coherence` field on Node/Edge (it was the exact

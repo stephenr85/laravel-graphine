@@ -9,7 +9,7 @@ use Rushing\Graphine\Testing\GraphStoreConformance;
 use Rushing\Graphine\Tests\Fixtures\ArrayGraphSource;
 
 /**
- * The GOVERNED member of the family (ADR-0102) certifies against the SAME kit.
+ * The GOVERNED member of the family certifies against the SAME kit.
  * A source that DECLARES a gate source yields
  * {@see GovernedRelationalDriver}, so the kit runs the
  * governance-as-gating law (gate 0 silences a central node; gate 1 is

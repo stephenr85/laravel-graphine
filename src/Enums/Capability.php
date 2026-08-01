@@ -11,9 +11,7 @@ namespace Rushing\Graphine\Enums;
  *
  * Mandatory spine = Declare (role 1) + Compute (role 2); every real graph
  * consumer exercises both. Governance (role 4) and QueryAtScale (role 3) are
- * optional and à-la-carte (ticket 02 decision 3).
- *
- * @see docs 01 — "Role coverage is disjoint across packages"
+ * optional and à-la-carte.
  */
 enum Capability: string
 {
@@ -27,8 +25,8 @@ enum Capability: string
     case QueryAtScale = 'query_at_scale';
 
     /**
-     * Role 5 — ENUMERATE the whole bounded snapshot as a node+edge dump (ticket
-     * 18): the anchorless read a visualization needs when there is no single
+     * Role 5 — ENUMERATE the whole bounded snapshot as a node+edge dump:
+     * the anchorless read a visualization needs when there is no single
      * NodeId to hand `neighbours()`. The relational family serves it free (the
      * spine already holds the snapshot); a traverse-native driver over an
      * unbounded store declines it. Optional, à-la-carte-by-type.
@@ -36,7 +34,7 @@ enum Capability: string
     case Enumerate = 'enumerate';
 
     /**
-     * Role 4 — GOVERNANCE-AS-GATING (ticket 03): a host-asserted scalar gate
+     * Role 4 — GOVERNANCE-AS-GATING: a host-asserted scalar gate
      * modulates role-2 compute output (`score = gate · computed`). Off the
      * structural spine; never bitemporal/locality (those had zero consumers and
      * were cut). Optional.

@@ -25,7 +25,7 @@ use Rushing\Graphine\Enums\TraversalDirection;
  * INTO role 3 by type and `speaks()` a native format. `query()` is a genuine
  * PASSTHROUGH: the statement + bindings go through opaque and come back as opaque
  * rows. The seam never re-abstracts the query language — that is the whole point
- * of "adopt the format, don't reinvent it" (ticket 04 point 5).
+ * of "adopt the format, don't reinvent it".
  */
 class QueryingDriver extends AbstractDriver implements ComputeStore, QueryableStore, StructureStore
 {

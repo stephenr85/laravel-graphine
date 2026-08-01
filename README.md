@@ -1,10 +1,11 @@
 # `rushing/laravel-graphine`
 
 A pluggable Laravel **graph-substrate seam**: one `GraphStore` contract, four
-role sub-contracts, a set of value types, **one in-memory reference driver**, and
-a **conformance test-kit** any real driver certifies against. The package ships
-**zero persistence drivers** — real persistence is always the consumer's adapter
-over its own wheel.
+role sub-contracts, a set of value types, a **reference in-memory driver**, a
+**generic relational driver family** that graphs any Eloquent table out of the
+box, and a **conformance test-kit** any driver certifies against. Specialized
+persistence and compute backends — AGE, Neo4j, a Python heavy-compute service —
+stay the consumer's adapter behind the same contract.
 
 > The format is the wheel; graphine builds the wagon. Adopt every graph library;
 > build the seam that lets you swap them behind one contract.
@@ -18,16 +19,18 @@ composer require rushing/laravel-graphine
 The service provider auto-registers (Laravel package discovery). Out of the box
 the default driver is the in-memory reference driver.
 
-## What the package ships (and what it deliberately does not)
+## What the package ships (and what it leaves to the consumer)
 
-| Package (OSS-clean, no host concepts) | The consumer's (never in the package) |
+| Ships in the package (OSS-clean, no host concepts) | Stays the consumer's adapter |
 |---|---|
-| `GraphStore` contract + 4 role sub-contracts | Every **real persistence driver** |
-| Value types (`Node`, `Edge`, `NodeId`, `Path`, `QueryResult`) | A relational knowledge-graph driver |
-| Enums (`Capability`, `QueryFormat`, `TraversalDirection`) | A governance-gating driver |
-| **One in-memory reference driver** | AGE / Neo4j / heavy-compute backends |
-| **Pure algorithm kernels** (`Algorithms\` — Kahn, Tarjan, components) | A heavy-compute driver (rustworkx) over a boundary |
-| **A conformance test-kit** (`Testing\GraphStoreConformance`) | Each driver's storage, gate semantics, wire language |
+| `GraphStore` contract + 4 role sub-contracts + the `GraphSource` seam | A specialized backend behind a network/process boundary |
+| Value types (`Node`, `Edge`, `NodeId`, `Path`, `QueryResult`) | An AGE / Neo4j native-query driver (role 3) |
+| Enums (`Capability`, `QueryFormat`, `TraversalDirection`) | A Python / rustworkx heavy-compute driver (role 2) |
+| **Reference in-memory driver** (roles 1/2/4) | A bespoke storage driver with its own gate semantics |
+| **Generic relational driver family** — `RelationalDriver` / `GovernedRelationalDriver`, factory-selected | |
+| **Config-driven `AdjacencyListSource`** — graph any edge-table or `parent_id` table | |
+| **Pure algorithm kernels** (`Algorithms\` — Kahn, Tarjan, components) | |
+| **Conformance test-kit** (`Testing\GraphStoreConformance`) | |
 
 ## The seam in one picture
 
@@ -39,11 +42,12 @@ the default driver is the in-memory reference driver.
    │  StructureStore(1) ComputeStore(2)│  QueryableStore(3)  GovernedStore(4)   │
    └──────────────────┼───────────────────────────────────────────────────────┘
                       │
-  PACKAGE ships ONE driver:            CONSUMER authors its own:
-  └── InMemoryDriver                   ├── a relational driver (roles 1/2)
-        roles 1 + 2 + the role-4       ├── a governance-gating driver (role 4)
-        gating surface, so the         ├── an AGE / Neo4j query driver (role 3)
-        test-kit has an oracle         └── a heavy-compute driver over a boundary
+  PACKAGE ships:                       CONSUMER authors its own:
+  ├── InMemoryDriver (roles 1/2/4)     ├── an AGE / Neo4j query driver (role 3)
+  ├── RelationalDriver family          ├── a heavy-compute driver (role 2)
+  │     (roles 1/2, +4 governed)       │     over a process boundary
+  └── AdjacencyListSource              └── a bespoke storage backend
+        (graph any relational table)         with its own gate semantics
 ```
 
 ## À-la-carte: mandatory spine + optional roles
@@ -105,9 +109,44 @@ implementation, two entry points. These kernels are the only code here that
 depends on no graphine abstraction; they live in the package because the
 reference driver and its consumers both need them.
 
+## Graph any relational table out of the box
+
+You don't need a bespoke driver to graph a table you already have. Point the
+config-driven `AdjacencyListSource` at it and let `RelationalDriverFactory` pick
+the driver member:
+
+```php
+use Rushing\Graphine\Sources\AdjacencyListSource;
+use Rushing\Graphine\Drivers\RelationalDriverFactory;
+
+$source = new AdjacencyListSource($connectionResolver, [
+    'nodes' => ['table' => 'circuit_nodes', 'key' => 'id', 'type' => 'type'],
+    'edges' => ['table' => 'circuit_edges', 'from' => 'source_node_id', 'to' => 'target_node_id'],
+]);
+
+app(\Rushing\Graphine\GraphStoreManager::class)
+    ->extend('circuits', fn () => RelationalDriverFactory::make($source, 'circuits'));
+```
+
+One config array covers two source shapes:
+
+- **Edge-table** — a separate `(from, to[, weight])` table, one row per edge.
+- **Self-referential FK** — swap `edges` for `parent` (`['column' => 'parent_id',
+  'direction' => 'child_to_parent']`); each non-null FK becomes an edge. This is
+  what makes "graph any `parent_id` model" real, no edge table needed.
+
+The factory selects by **type**, not a runtime flag: a source that declares a
+`gate` column (`providesGates()` true) yields the `GovernedRelationalDriver`
+(role 4); otherwise the spine-only `RelationalDriver`. Either way the driver
+hydrates the source into the in-memory spine **once** and answers every read and
+compute from that bounded snapshot — a read-only consumer pays hydration once; a
+consumer whose writes hit storage invalidates the snapshot so the next read
+re-hydrates.
+
 ## Registering your own driver
 
-The app resolves the **contract**, never a concrete driver:
+For a backend the shipped drivers don't cover, the app resolves the **contract**,
+never a concrete driver:
 
 ```php
 public function __construct(private GraphStore $graph) {}   // default driver, from config
@@ -130,7 +169,7 @@ spine on every driver and the role-4 gating law only on drivers that implement
 use Rushing\Graphine\Contracts\GraphStore;
 use Rushing\Graphine\Testing\GraphStoreConformance;
 
-final class RelationalKgDriverConformanceTest extends GraphStoreConformance
+class RelationalKgDriverConformanceTest extends GraphStoreConformance
 {
     protected function createDriver(): GraphStore
     {
@@ -155,15 +194,17 @@ src/
 ├── GraphStoreManager.php       Manager-driver hub — default 'memory' + extend()
 ├── GraphineServiceProvider.php
 ├── Algorithms/                 Pure kernels — Kahn topo-sort, Tarjan SCC, components (no store)
-├── Contracts/                  GraphStore + 4 role sub-contracts
-├── Drivers/                    AbstractDriver + the ONE reference driver (InMemoryDriver)
-├── Dto/                        Node, Edge (pure topology), NodeId, Path, QueryResult (readonly)
+├── Contracts/                  GraphStore + 4 role sub-contracts + the GraphSource seam
+├── Drivers/                    InMemoryDriver + the relational family (RelationalDriver, governed, factory)
+├── Dto/                        Node, Edge (pure topology), NodeId, Path, QueryResult
 ├── Enums/                      Capability, QueryFormat, TraversalDirection
+├── Sources/                    AdjacencyListSource — graph any relational table by config
 └── Testing/                    GraphStoreConformance + SeamGuard (shipped test-kit)
-tests/                          the reference driver certifies itself
+tests/                          the in-memory + relational drivers certify against the kit
 ```
 
 ## License
 
 MIT. © Stephen Rushing. A reusable, unopinionated graph-substrate seam — free to build
-on; the persistence drivers (and any composed engine above them) are the consumer's.
+on; the specialized/boundary-crossing persistence drivers (and any composed engine
+above them) are the consumer's.

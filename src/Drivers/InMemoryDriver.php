@@ -16,24 +16,21 @@ use Rushing\Graphine\Enums\Capability;
 use Rushing\Graphine\Enums\TraversalDirection;
 
 /**
- * THE PACKAGE'S ONE AND ONLY DRIVER — the in-memory REFERENCE driver.
+ * THE REFERENCE DRIVER — the in-memory oracle the conformance kit certifies against.
  *
- * Ticket 02 ruled the package ships the contract + value types/enums + ONE
- * in-memory reference driver + a conformance test-kit, and ZERO real
- * persistence drivers. This is that reference driver: it implements the full
- * mandatory spine (StructureStore + ComputeStore) AND the optional GovernedStore
- * so the conformance test-kit (Testing\GraphStoreConformance) has a working
- * oracle to certify every real consumer-side driver against.
+ * The package ships this alongside the generic relational driver family; this is
+ * the member with NO persistence, so it doubles as the test-kit's oracle. It
+ * implements the full mandatory spine (StructureStore + ComputeStore) AND the
+ * optional GovernedStore, so the conformance kit (Testing\GraphStoreConformance)
+ * has a working oracle to certify every consumer-side driver against.
  *
  * Conceptually backed by graphp/graph (MIT); the plain PHP arrays below stand
  * in for a real graphp\Graph instance (suggest-only dep — see composer.json).
  * It links no boundary-only engine, so it trivially passes the seam guard.
  *
- * Because it holds no persistence of its own, it CANNOT contradict ADR-0086's
- * "KG stays relational" — the app's relational KG driver is authored app-side
- * (see examples/app-drivers/RelationalKgDriver), never here.
- *
- * @see docs 01 §A — graphp/graph → in-memory driver
+ * Because it holds no persistence of its own it is a pure oracle: real storage
+ * lives in the relational family here, or in a consumer's bespoke driver
+ * (see examples/app-drivers/), never in this class.
  */
 class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableStore, GovernedStore, StructureStore
 {

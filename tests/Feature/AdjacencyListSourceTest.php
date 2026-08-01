@@ -10,7 +10,7 @@ use Rushing\Graphine\Dto\NodeId;
 use Rushing\Graphine\Enums\TraversalDirection;
 use Rushing\Graphine\Sources\AdjacencyListSource;
 
-// ADR-0102 build ticket 13 — AdjacencyListSource covers BOTH relational edge
+// AdjacencyListSource covers BOTH relational edge
 // encodings (separate edge table + self-referential FK), config-only, and its
 // optional gate selects the governed driver through the factory.
 

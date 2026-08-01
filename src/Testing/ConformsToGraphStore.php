@@ -17,7 +17,7 @@ use Rushing\Graphine\Enums\TraversalDirection;
 /**
  * THE CONFORMANCE ASSERTIONS — the reusable body of the test-kit, as a trait.
  *
- * Ticket 02 named the kit a first-class package component. Shipping it as a TRAIT
+ * The kit is a first-class package component. Shipping it as a TRAIT
  * (in addition to the GraphStoreConformance base class) lets a consumer certify a
  * driver from WITHIN its own framework TestCase — e.g. a Laravel/tenancy-aware
  * TestCase that the abstract base class could never extend (PHP is single-
@@ -192,7 +192,7 @@ trait ConformsToGraphStore
     }
 
     /**
-     * THE GOVERNANCE-AS-GATING LAW (ticket 03) — a CENTRAL node silenced. Only
+     * THE GOVERNANCE-AS-GATING LAW — a CENTRAL node silenced. Only
      * for drivers that opt into role 4 by TYPE (the type-level opt-in that
      * replaced the nullable `?Coherence` field). A gate of 0.0 silences a node
      * no matter how central it computes — the whole evidenced contract (numero
@@ -234,7 +234,7 @@ trait ConformsToGraphStore
     }
 
     /**
-     * THE PASS-THROUGH HALF OF THE LAW (ticket 03): `gate = 1` leaves compute
+     * THE PASS-THROUGH HALF OF THE LAW: `gate = 1` leaves compute
      * unchanged. An ungoverned (or explicitly gate-1) node's governed score
      * equals its ungoverned rank — governance modulates, it does not recompute.
      */
@@ -267,7 +267,7 @@ trait ConformsToGraphStore
     }
 
     /**
-     * THE À-LA-CARTE-BY-TYPE LAW (ticket 04). Optional roles are opted into by
+     * THE À-LA-CARTE-BY-TYPE LAW. Optional roles are opted into by
      * TYPE, and `supports()` must agree with the interfaces the driver actually
      * implements — never a nullable field, never a lie. A spine-only driver is
      * simply not `instanceof` the optional contracts.
@@ -309,7 +309,7 @@ trait ConformsToGraphStore
     }
 
     /**
-     * NATIVE-QUERY PASSTHROUGH (ticket 04 point 5). For a driver that opts into
+     * NATIVE-QUERY PASSTHROUGH. For a driver that opts into
      * role 3, every format it `speaks()` is answerable and returns opaque rows —
      * the seam passes the statement through rather than re-abstracting a query
      * language. Skipped entirely for spine-only drivers.
@@ -330,7 +330,7 @@ trait ConformsToGraphStore
     }
 
     /**
-     * WHOLE-SNAPSHOT ENUMERATION (ticket 18). For a driver that opts into role 5,
+     * WHOLE-SNAPSHOT ENUMERATION. For a driver that opts into role 5,
      * `nodes()`/`edges()` dump the FULL bounded snapshot — every seeded node and
      * every seeded edge, the anchorless read a visualization needs. Asserts the
      * dump agrees with what was declared, not an order. Skipped for drivers that
@@ -355,7 +355,7 @@ trait ConformsToGraphStore
         $driver->putEdge(new Edge(NodeId::of('b'), NodeId::of('c'), 'LINKS'));
 
         // The node dump is the full seeded set — a whole-graph read, not a walk
-        // from an anchor (which would miss the anchorless viz modes ticket 18 exists for).
+        // from an anchor (which would miss the anchorless viz modes enumeration exists for).
         $nodeIds = array_map(static fn (Node $n): string => $n->id->value, $driver->nodes());
         sort($nodeIds);
         $this->assertSame(['a', 'b', 'c'], $nodeIds, 'nodes() dumps every node in the bounded snapshot');
@@ -370,7 +370,7 @@ trait ConformsToGraphStore
     }
 
     /**
-     * CALLERS BRANCH ON supports(), NOT concrete instanceof (ticket 04). A guard
+     * CALLERS BRANCH ON supports(), NOT concrete instanceof. A guard
      * written against the capability keeps working when a driver widens or
      * narrows coverage — proven here by a supports()-guarded score path that
      * yields a map on ANY spine driver, governed or not.

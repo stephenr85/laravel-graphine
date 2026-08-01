@@ -16,9 +16,9 @@ use Rushing\Graphine\Enums\Capability;
 use Rushing\Graphine\Tests\Fixtures\ArrayGraphSource;
 
 /**
- * ADR-0102 driver-family laws that are cheaper to assert directly than through
+ * Driver-family laws that are cheaper to assert directly than through
  * the full conformance kit: factory selection, instanceof/supports agreement for
- * BOTH members (build ticket 04 à-la-carte law), snapshot hydration from a
+ * BOTH members (à-la-carte law), snapshot hydration from a
  * populated source, and gate loading from the source (not seeded by the caller).
  */
 class RelationalDriverFamilyTest extends TestCase

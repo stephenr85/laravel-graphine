@@ -9,7 +9,7 @@ use Rushing\Graphine\Testing\GraphStoreConformance;
 use Rushing\Graphine\Tests\Fixtures\ArrayGraphSource;
 
 /**
- * The GENERIC relational driver (ADR-0102) certifies against the SAME shipped
+ * The GENERIC relational driver certifies against the SAME shipped
  * kit, driven by an in-test {@see ArrayGraphSource}. A non-governed source
  * yields the plain {@see RelationalDriver}: it passes
  * the spine laws and SKIPS the optional governance / query sections — the

@@ -15,23 +15,21 @@ use Rushing\Graphine\Drivers\InMemoryDriver;
  * resolves `GraphStore` from the container and never names a concrete driver;
  * that is the whole point of the seam.
  *
- * DEFAULT = 'memory' (ticket 04). The package ships EXACTLY ONE driver — the
- * in-memory reference driver. It owns no persistence, so it structurally cannot
- * contradict ADR-0086's "KG stays relational": there is no store here to push.
- * Real persistence drivers (relational KG, AGE, Neo4j, Python-compute,
- * governance-gating) are the CONSUMER's, registered via extend() — see
- * examples/app-drivers/ for worked, app-side examples.
+ * DEFAULT = 'memory'. The package ships the in-memory reference driver (the
+ * default) AND a generic relational driver family — RelationalDriver /
+ * GovernedRelationalDriver, factory-selected over a GraphSource — so a consumer
+ * can graph any relational table out of the box. Specialized backends (AGE,
+ * Neo4j, Python heavy-compute) stay the CONSUMER's, registered via extend() —
+ * see examples/app-drivers/ for worked, app-side examples.
  *
  * @method GraphStore driver(?string $driver = null)
- *
- * @see docs 02 — "config picks the default driver; runtime extend() adds more"
  */
 class GraphStoreManager extends Manager
 {
     public function getDefaultDriver(): string
     {
-        // The package's only shipped driver is the in-memory reference driver.
-        // A consumer overrides this in config once it has registered its own.
+        // The default is the in-memory reference driver; a consumer overrides this
+        // in config once it has registered its own (e.g. a relational driver).
         return $this->config->get('graphine.default', 'memory');
     }
 

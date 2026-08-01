@@ -8,7 +8,7 @@ use Rushing\Graphine\Dto\NodeId;
 use Rushing\Graphine\Enums\Capability;
 
 /**
- * THE GOVERNED MEMBER of the relational driver family (ADR-0102).
+ * THE GOVERNED MEMBER of the relational driver family.
  *
  * Everything {@see RelationalDriver} is (a spine hydrated once from a
  * {@see GraphSource}, all compute delegated), PLUS
@@ -20,11 +20,11 @@ use Rushing\Graphine\Enums\Capability;
  * The family is factory-selected: {@see RelationalDriverFactory} instantiates
  * THIS class iff the source declares a gate source, and the plain
  * {@see RelationalDriver} otherwise, so `instanceof GovernedStore` and
- * `supports(Capability::Governance)` stay in agreement (ADR-0100 §3 / build
- * ticket 04 — capability honest by type, not a runtime flag).
+ * `supports(Capability::Governance)` stay in agreement (capability honest by
+ * type, not a runtime flag).
  *
  * Governance rides OFF the structural spine — a gate is never a Node/Edge field
- * (the two-weights separation, ADR-0011 / build ticket 03). `reason()` remains a
+ * (the two-weights separation). `reason()` remains a
  * delegation signature only: the reference spine ships no in-process reasoner, so
  * this driver never advertises `Capability::Reasoning`. A consumer with a real
  * backend overrides `reason()` and adds the capability itself.

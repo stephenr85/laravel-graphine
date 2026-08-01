@@ -11,7 +11,7 @@ use Rushing\Graphine\Dto\Node;
 use Rushing\Graphine\Dto\NodeId;
 
 /**
- * THE CONFIG-DRIVEN ADJACENCY-LIST SOURCE (ADR-0102) — graph ANY Eloquent table
+ * THE CONFIG-DRIVEN ADJACENCY-LIST SOURCE — graph ANY Eloquent table
  * with zero bespoke code.
  *
  * An adjacency list is a SOURCE SHAPE, not a driver: a relational encoding where
@@ -33,7 +33,7 @@ use Rushing\Graphine\Dto\NodeId;
  * default the primary key); the graph NodeId is the config `nodes.id` column
  * (default the key). An edge whose endpoint is not among the loaded nodes is
  * SKIPPED — this is how a scoped snapshot (e.g. one circuit) drops edges pointing
- * outside it. No Splicewire vocabulary lives here (ADR-0100 §5) — it reads the
+ * outside it. No Splicewire vocabulary lives here — it reads the
  * consumer's own tables, inside the caller's connection/tenant context.
  *
  * CONFIG SHAPE (edge-table mode):

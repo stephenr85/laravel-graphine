@@ -12,14 +12,12 @@ use Rushing\Graphine\Enums\TraversalDirection;
  * hierarchy, weighting and (possibly cyclic) recursion.
  *
  * MANDATORY spine (with ComputeStore) — every real graph consumer exercises
- * both (ticket 02 decision 3). Cohesive sub-contract: everything here is
+ * both. Cohesive sub-contract: everything here is
  * "shape the graph / read its neighbourhood". The package's reference
  * implementation is the in-memory driver; a consumer's relational driver
  * (e.g. over staudenmeir/laravel-adjacency-list recursive CTEs, or the KG's
  * rdf_triples + PHP traversal) is authored app-side — see
  * examples/app-drivers/RelationalKgDriver.
- *
- * @see docs 01 §A — "staudenmeir/laravel-adjacency-list … the recommended default"
  */
 interface StructureStore
 {

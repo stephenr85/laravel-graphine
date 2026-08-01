@@ -7,8 +7,8 @@ namespace Rushing\Graphine\Dto;
  *
  * `weight` is the STRUCTURAL weight (role 1/2): role-1 requires weighted
  * relationships and role-2 (Dijkstra / weighted centrality) consumes them. It
- * is emphatically NOT the governance gate — the two-weights separation from
- * numero's ADR-0011 (ticket 03): `Edge.weight` *computes*, the governance gate
+ * is emphatically NOT the governance gate — the two-weights separation:
+ * `Edge.weight` *computes*, the governance gate
  * *gates the computed result*. Fusing them is the drift the doctrine forbids,
  * so the gate never appears on `Edge` — it lives only behind `GovernedStore`.
  *

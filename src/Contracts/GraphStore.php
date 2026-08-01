@@ -17,14 +17,12 @@ use Rushing\Graphine\Enums\QueryFormat;
  * This is the explicit answer to "no monolithic god-interface": a driver that
  * only does role 2 implements GraphStore + ComputeStore and nothing else, and
  * `supports()` tells callers the truth. Role coverage across the ecosystem is
- * disjoint (docs 01), so the contract models that disjointness instead of
+ * disjoint, so the contract models that disjointness instead of
  * lying about it.
  *
  * Manager-driver pattern (Illuminate\Support\Manager), laravel-popcorn-style:
  * config picks the default driver; runtime extend() adds more; the app resolves
  * `GraphStore` from the container and never names a concrete driver.
- *
- * @see docs 02 — "the seam that reconciles them is itself the wagon"
  */
 interface GraphStore
 {
