@@ -2,6 +2,7 @@
 
 namespace Rushing\Graphine\Tests\Fixtures;
 
+use Rushing\Graphine\Algorithms\TopologicalOrder;
 use Rushing\Graphine\Contracts\ComputeStore;
 use Rushing\Graphine\Contracts\StructureStore;
 use Rushing\Graphine\Drivers\AbstractDriver;
@@ -84,5 +85,10 @@ class SpineOnlyDriver extends AbstractDriver implements ComputeStore, StructureS
     public function detectCycles(): array
     {
         return $this->spine->detectCycles();
+    }
+
+    public function topologicalSort(): TopologicalOrder
+    {
+        return $this->spine->topologicalSort();
     }
 }
