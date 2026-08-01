@@ -2,9 +2,12 @@
 
 namespace Rushing\Graphine\Dto;
 
+use Rushing\Graphine\Contracts\NodeContract;
+use Rushing\Graphine\Contracts\NodeIdContract;
+
 /**
  * A graph node — PURE TOPOLOGY. Cross-cutting value type accepted/returned by
- * every driver.
+ * every driver; the shipped implementation of {@see NodeContract}.
  *
  * Role-4 governance does NOT ride here. A node carries only its
  * identity, its type/label, and a domain property bag. Whether a node is
@@ -16,7 +19,7 @@ namespace Rushing\Graphine\Dto;
  *
  * Roles: 1 (declare), 2 (compute operand).
  */
-class Node
+class Node implements NodeContract
 {
     public function __construct(
         public NodeId $id,
@@ -25,4 +28,19 @@ class Node
         /** Arbitrary domain attributes. NO governance gate lives here. */
         public array $properties = [],
     ) {}
+
+    public function id(): NodeIdContract
+    {
+        return $this->id;
+    }
+
+    public function type(): string
+    {
+        return $this->type;
+    }
+
+    public function properties(): array
+    {
+        return $this->properties;
+    }
 }

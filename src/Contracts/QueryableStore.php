@@ -2,7 +2,6 @@
 
 namespace Rushing\Graphine\Contracts;
 
-use Rushing\Graphine\Dto\QueryResult;
 use Rushing\Graphine\Enums\QueryFormat;
 
 /**
@@ -31,5 +30,5 @@ interface QueryableStore
      * @param  QueryFormat  $format  must be advertised by GraphStore::speaks()
      * @param  array<string,mixed>  $bindings  parameterised query bindings
      */
-    public function query(QueryFormat $format, string $statement, array $bindings = []): QueryResult;
+    public function query(QueryFormat $format, string $statement, array $bindings = []): QueryResultContract;
 }

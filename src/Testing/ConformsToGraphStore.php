@@ -3,9 +3,11 @@
 namespace Rushing\Graphine\Testing;
 
 use Rushing\Graphine\Contracts\ComputeStore;
+use Rushing\Graphine\Contracts\EdgeContract;
 use Rushing\Graphine\Contracts\EnumerableStore;
 use Rushing\Graphine\Contracts\GovernedStore;
 use Rushing\Graphine\Contracts\GraphStore;
+use Rushing\Graphine\Contracts\NodeContract;
 use Rushing\Graphine\Contracts\QueryableStore;
 use Rushing\Graphine\Contracts\StructureStore;
 use Rushing\Graphine\Dto\Edge;
@@ -69,7 +71,7 @@ trait ConformsToGraphStore
         $driver->putNode(new Node($id, 'Entity'));
 
         $this->assertNotNull($driver->getNode($id));
-        $this->assertTrue($driver->getNode($id)?->id->equals($id));
+        $this->assertTrue($driver->getNode($id)?->id()->equals($id));
     }
 
     public function test_compute_rank_returns_a_score_map(): void
@@ -109,7 +111,7 @@ trait ConformsToGraphStore
         $driver->putEdge(new Edge(NodeId::of('b'), NodeId::of('c'), 'LINKS'));
 
         $descIds = array_map(
-            static fn (Node $n): string => $n->id->value,
+            static fn (NodeContract $n): string => $n->id()->value(),
             $driver->neighbours(NodeId::of('a'), TraversalDirection::Descendants),
         );
         $this->assertContains('b', $descIds, 'descendant one hop away must be reached');
@@ -117,7 +119,7 @@ trait ConformsToGraphStore
         $this->assertNotContains('a', $descIds, 'the origin is not its own neighbour');
 
         $ancIds = array_map(
-            static fn (Node $n): string => $n->id->value,
+            static fn (NodeContract $n): string => $n->id()->value(),
             $driver->neighbours(NodeId::of('c'), TraversalDirection::Ancestors),
         );
         $this->assertContains('b', $ancIds);
@@ -147,10 +149,10 @@ trait ConformsToGraphStore
 
         $path = $driver->shortestPath(NodeId::of('a'), NodeId::of('c'));
         $this->assertNotNull($path, 'a reachable target must yield a path');
-        $this->assertTrue($path->nodes[0]->equals(NodeId::of('a')), 'source first');
-        $this->assertTrue($path->nodes[count($path->nodes) - 1]->equals(NodeId::of('c')), 'target last');
-        $this->assertGreaterThanOrEqual(0.0, $path->cost, 'cost is non-negative');
-        $this->assertSame(count($path->nodes) - 1, $path->length(), 'length = edges walked');
+        $this->assertTrue($path->nodes()[0]->equals(NodeId::of('a')), 'source first');
+        $this->assertTrue($path->nodes()[count($path->nodes()) - 1]->equals(NodeId::of('c')), 'target last');
+        $this->assertGreaterThanOrEqual(0.0, $path->cost(), 'cost is non-negative');
+        $this->assertSame(count($path->nodes()) - 1, $path->length(), 'length = edges walked');
 
         $this->assertNull(
             $driver->shortestPath(NodeId::of('c'), NodeId::of('a')),
@@ -356,13 +358,13 @@ trait ConformsToGraphStore
 
         // The node dump is the full seeded set — a whole-graph read, not a walk
         // from an anchor (which would miss the anchorless viz modes enumeration exists for).
-        $nodeIds = array_map(static fn (Node $n): string => $n->id->value, $driver->nodes());
+        $nodeIds = array_map(static fn (NodeContract $n): string => $n->id()->value(), $driver->nodes());
         sort($nodeIds);
         $this->assertSame(['a', 'b', 'c'], $nodeIds, 'nodes() dumps every node in the bounded snapshot');
 
         // The edge dump is the full seeded edge set, endpoints preserved.
         $edgePairs = array_map(
-            static fn (Edge $e): string => $e->from->value.'->'.$e->to->value,
+            static fn (EdgeContract $e): string => $e->from()->value().'->'.$e->to()->value(),
             $driver->edges(),
         );
         sort($edgePairs);

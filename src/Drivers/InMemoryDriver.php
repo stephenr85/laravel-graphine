@@ -5,8 +5,12 @@ namespace Rushing\Graphine\Drivers;
 use Rushing\Graphine\Algorithms\TopologicalOrder;
 use Rushing\Graphine\Algorithms\TopologicalSort;
 use Rushing\Graphine\Contracts\ComputeStore;
+use Rushing\Graphine\Contracts\EdgeContract;
 use Rushing\Graphine\Contracts\EnumerableStore;
 use Rushing\Graphine\Contracts\GovernedStore;
+use Rushing\Graphine\Contracts\NodeContract;
+use Rushing\Graphine\Contracts\NodeIdContract;
+use Rushing\Graphine\Contracts\PathContract;
 use Rushing\Graphine\Contracts\StructureStore;
 use Rushing\Graphine\Dto\Edge;
 use Rushing\Graphine\Dto\Node;
@@ -34,10 +38,10 @@ use Rushing\Graphine\Enums\TraversalDirection;
  */
 class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableStore, GovernedStore, StructureStore
 {
-    /** @var array<string,Node> */
+    /** @var array<string,NodeContract> */
     private array $nodes = [];
 
-    /** @var list<Edge> */
+    /** @var list<EdgeContract> */
     private array $edges = [];
 
     /** @var array<string,float> host-asserted governance gates, nodeId => [0,1] */
@@ -62,38 +66,38 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
 
     // --- StructureStore (role 1) -------------------------------------------
 
-    public function putNode(Node $node): void
+    public function putNode(NodeContract $node): void
     {
-        $this->nodes[$node->id->value] = $node;
+        $this->nodes[$node->id()->value()] = $node;
     }
 
-    public function putEdge(Edge $edge): void
+    public function putEdge(EdgeContract $edge): void
     {
         $this->edges[] = $edge;
     }
 
-    public function getNode(NodeId $id): ?Node
+    public function getNode(NodeIdContract $id): ?NodeContract
     {
-        return $this->nodes[$id->value] ?? null;
+        return $this->nodes[$id->value()] ?? null;
     }
 
     // --- EnumerableStore (role 5) — dump the whole snapshot ----------------
 
-    /** @return list<Node> */
+    /** @return list<NodeContract> */
     public function nodes(): array
     {
         return array_values($this->nodes);
     }
 
-    /** @return list<Edge> */
+    /** @return list<EdgeContract> */
     public function edges(): array
     {
         return $this->edges;
     }
 
-    /** @return list<Node> */
+    /** @return list<NodeContract> */
     public function neighbours(
-        NodeId $of,
+        NodeIdContract $of,
         TraversalDirection $direction = TraversalDirection::Descendants,
         ?int $maxDepth = null,
     ): array {
@@ -101,9 +105,9 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
         // mirroring staudenmeir/laravel-adjacency-list's recursive relations
         // (and a WITH RECURSIVE CTE). BFS bounded by $maxDepth; the visited set
         // makes it cycle-safe, so $maxDepth = null means "all reachable".
-        $visited = [$of->value => true];
+        $visited = [$of->value() => true];
         $out = [];
-        /** @var list<array{NodeId,int}> $frontier */
+        /** @var list<array{NodeIdContract,int}> $frontier */
         $frontier = [[$of, 0]];
 
         while ($frontier !== []) {
@@ -112,10 +116,10 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
                 continue;
             }
             foreach ($this->step($current, $direction) as $next) {
-                if (isset($visited[$next->value])) {
+                if (isset($visited[$next->value()])) {
                     continue;
                 }
-                $visited[$next->value] = true;
+                $visited[$next->value()] = true;
                 if ($node = $this->getNode($next)) {
                     $out[] = $node;
                 }
@@ -129,17 +133,17 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
     /**
      * One directed step from a node, honouring traversal direction.
      *
-     * @return list<NodeId>
+     * @return list<NodeIdContract>
      */
-    private function step(NodeId $from, TraversalDirection $direction): array
+    private function step(NodeIdContract $from, TraversalDirection $direction): array
     {
         $next = [];
         foreach ($this->edges as $edge) {
-            if ($direction !== TraversalDirection::Ancestors && $edge->from->equals($from)) {
-                $next[] = $edge->to;   // descend along the edge direction
+            if ($direction !== TraversalDirection::Ancestors && $edge->from()->equals($from)) {
+                $next[] = $edge->to();   // descend along the edge direction
             }
-            if ($direction !== TraversalDirection::Descendants && $edge->to->equals($from)) {
-                $next[] = $edge->from;  // ascend against the edge direction
+            if ($direction !== TraversalDirection::Descendants && $edge->to()->equals($from)) {
+                $next[] = $edge->from();  // ascend against the edge direction
             }
         }
 
@@ -148,7 +152,7 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
 
     // --- ComputeStore (role 2) ---------------------------------------------
 
-    public function shortestPath(NodeId $from, NodeId $to): ?Path
+    public function shortestPath(NodeIdContract $from, NodeIdContract $to): ?PathContract
     {
         // Dijkstra over the directed, weighted edge list. Real behaviour: a
         // graphp-backed driver would delegate to its Dijkstra; the arrays here
@@ -158,9 +162,9 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
         }
 
         /** @var array<string,float> $dist */
-        $dist = [$from->value => 0.0];
+        $dist = [$from->value() => 0.0];
         /** @var array<string,?string> $prev */
-        $prev = [$from->value => null];
+        $prev = [$from->value() => null];
         /** @var array<string,true> $settled */
         $settled = [];
 
@@ -179,17 +183,17 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
             if ($u === null) {
                 break; // no reachable unsettled node left
             }
-            if ($u === $to->value) {
+            if ($u === $to->value()) {
                 break; // target settled — done
             }
             $settled[$u] = true;
 
             foreach ($this->edges as $edge) {
-                if (! $edge->from->equals(NodeId::of($u))) {
+                if (! $edge->from()->equals(NodeId::of($u))) {
                     continue;
                 }
-                $v = $edge->to->value;
-                $alt = $dist[$u] + max(0.0, $edge->weight);
+                $v = $edge->to()->value();
+                $alt = $dist[$u] + max(0.0, $edge->weight());
                 if (! isset($dist[$v]) || $alt < $dist[$v]) {
                     $dist[$v] = $alt;
                     $prev[$v] = $u;
@@ -197,17 +201,17 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
             }
         }
 
-        if (! isset($dist[$to->value])) {
+        if (! isset($dist[$to->value()])) {
             return null; // unreachable
         }
 
         // Reconstruct the node walk, source first.
         $walk = [];
-        for ($at = $to->value; $at !== null; $at = $prev[$at] ?? null) {
+        for ($at = $to->value(); $at !== null; $at = $prev[$at] ?? null) {
             array_unshift($walk, NodeId::of($at));
         }
 
-        return new Path(nodes: $walk, cost: $dist[$to->value]);
+        return new Path(nodes: $walk, cost: $dist[$to->value()]);
     }
 
     /** @return array<string,float> */
@@ -235,12 +239,12 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
         /** @var array<string,float> $outSum */
         $outSum = array_fill_keys($ids, 0.0);
         foreach ($this->edges as $edge) {
-            $f = $edge->from->value;
-            $t = $edge->to->value;
+            $f = $edge->from()->value();
+            $t = $edge->to()->value();
             if (! isset($rank[$f]) || ! isset($rank[$t])) {
                 continue; // edge referencing an unknown node
             }
-            $w = max(0.0, $edge->weight);
+            $w = max(0.0, $edge->weight());
             $out[$f][$t] = ($out[$f][$t] ?? 0.0) + $w;
             $outSum[$f] += $w;
         }
@@ -271,7 +275,7 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
         return $rank;
     }
 
-    /** @return list<Path> */
+    /** @return list<PathContract> */
     public function detectCycles(): array
     {
         // Colour-marked DFS: a back-edge to a node on the current stack is a
@@ -280,7 +284,7 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
         $ids = array_keys($this->nodes);
         /** @var array<string,int> $colour 0=white 1=grey 2=black */
         $colour = array_fill_keys($ids, 0);
-        /** @var list<Path> $cycles */
+        /** @var list<PathContract> $cycles */
         $cycles = [];
         /** @var array<string,true> $seenCycle */
         $seenCycle = [];
@@ -292,10 +296,10 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
             $colour[$u] = 1;
             $stack[] = $u;
             foreach ($this->edges as $edge) {
-                if (! $edge->from->equals(NodeId::of($u))) {
+                if (! $edge->from()->equals(NodeId::of($u))) {
                     continue;
                 }
-                $v = $edge->to->value;
+                $v = $edge->to()->value();
                 if (! isset($colour[$v])) {
                     continue;
                 }
@@ -337,7 +341,7 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
         // remainder; the reference driver just marshals its snapshot into it.
         $adjacency = [];
         foreach ($this->edges as $edge) {
-            $adjacency[$edge->from->value][] = $edge->to->value;
+            $adjacency[$edge->from()->value()][] = $edge->to()->value();
         }
 
         return TopologicalSort::kahn(array_keys($this->nodes), $adjacency);
@@ -345,10 +349,10 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
 
     // --- GovernedStore (role 4 — governance-as-gating) ----------------------
 
-    public function assertGovernance(NodeId $node, float $gate): void
+    public function assertGovernance(NodeIdContract $node, float $gate): void
     {
         // Clamp to [0,1]; the gate is a host-side hint, meaning stays host-side.
-        $this->gates[$node->value] = max(0.0, min(1.0, $gate));
+        $this->gates[$node->value()] = max(0.0, min(1.0, $gate));
     }
 
     /** @return array<string,float> */
@@ -367,13 +371,13 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
         return $governed;
     }
 
-    public function classify(NodeId $node, string $classIri): void
+    public function classify(NodeIdContract $node, string $classIri): void
     {
-        $this->classes[$node->value] = $classIri;
+        $this->classes[$node->value()] = $classIri;
     }
 
     /** @return list<string> */
-    public function reason(NodeId $node): array
+    public function reason(NodeIdContract $node): array
     {
         // The package ships the delegation SIGNATURE only — never an in-process
         // reasoner (the seam guard forbids linking one). Inference is always a

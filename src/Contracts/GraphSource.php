@@ -3,9 +3,6 @@
 namespace Rushing\Graphine\Contracts;
 
 use Rushing\Graphine\Drivers\RelationalDriver;
-use Rushing\Graphine\Dto\Edge;
-use Rushing\Graphine\Dto\Node;
-use Rushing\Graphine\Dto\NodeId;
 
 /**
  * THE GRAPH-SOURCE SEAM — the one thing that varies per consumer.
@@ -37,14 +34,14 @@ interface GraphSource
      * Every node of the (scoped) graph — including nodes that appear only as an
      * edge endpoint, so the hydrated spine can answer `getNode` for them.
      *
-     * @return iterable<Node>
+     * @return iterable<NodeContract>
      */
     public function nodes(): iterable;
 
     /**
      * Every directed (optionally weighted) edge of the (scoped) graph.
      *
-     * @return iterable<Edge>
+     * @return iterable<EdgeContract>
      */
     public function edges(): iterable;
 
@@ -54,7 +51,7 @@ interface GraphSource
      * for a spine-only source. NEVER a Node/Edge field — the two-weights
      * separation rides here, off the structural spine.
      *
-     * @return iterable<array{0: NodeId, 1: float}>
+     * @return iterable<array{0: NodeIdContract, 1: float}>
      */
     public function gates(): iterable;
 

@@ -2,9 +2,6 @@
 
 namespace Rushing\Graphine\Contracts;
 
-use Rushing\Graphine\Dto\Edge;
-use Rushing\Graphine\Dto\Node;
-use Rushing\Graphine\Dto\NodeId;
 use Rushing\Graphine\Enums\TraversalDirection;
 
 /**
@@ -21,21 +18,21 @@ use Rushing\Graphine\Enums\TraversalDirection;
  */
 interface StructureStore
 {
-    public function putNode(Node $node): void;
+    public function putNode(NodeContract $node): void;
 
-    public function putEdge(Edge $edge): void;
+    public function putEdge(EdgeContract $edge): void;
 
-    public function getNode(NodeId $id): ?Node;
+    public function getNode(NodeIdContract $id): ?NodeContract;
 
     /**
      * Adjacency read — ancestors/descendants/both. Maps directly onto the
      * adjacency-list library's ancestors()/descendants() relations, or a
      * WITH RECURSIVE CTE.
      *
-     * @return list<Node>
+     * @return list<NodeContract>
      */
     public function neighbours(
-        NodeId $of,
+        NodeIdContract $of,
         TraversalDirection $direction = TraversalDirection::Descendants,
         ?int $maxDepth = null,
     ): array;

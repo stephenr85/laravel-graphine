@@ -4,13 +4,13 @@ namespace Rushing\Graphine\Drivers;
 
 use Rushing\Graphine\Algorithms\TopologicalOrder;
 use Rushing\Graphine\Contracts\ComputeStore;
+use Rushing\Graphine\Contracts\EdgeContract;
 use Rushing\Graphine\Contracts\EnumerableStore;
 use Rushing\Graphine\Contracts\GraphSource;
+use Rushing\Graphine\Contracts\NodeContract;
+use Rushing\Graphine\Contracts\NodeIdContract;
+use Rushing\Graphine\Contracts\PathContract;
 use Rushing\Graphine\Contracts\StructureStore;
-use Rushing\Graphine\Dto\Edge;
-use Rushing\Graphine\Dto\Node;
-use Rushing\Graphine\Dto\NodeId;
-use Rushing\Graphine\Dto\Path;
 use Rushing\Graphine\Enums\Capability;
 use Rushing\Graphine\Enums\TraversalDirection;
 
@@ -69,28 +69,28 @@ class RelationalDriver extends AbstractDriver implements ComputeStore, Enumerabl
 
     // --- StructureStore (role 1) — read from the hydrated snapshot -----------
 
-    public function putNode(Node $node): void
+    public function putNode(NodeContract $node): void
     {
         // Declare writes land in the in-memory snapshot only (the conformance kit
         // seeds through here). A consumer that persists overrides this.
         $this->spine()->putNode($node);
     }
 
-    public function putEdge(Edge $edge): void
+    public function putEdge(EdgeContract $edge): void
     {
         $this->spine()->putEdge($edge);
     }
 
-    public function getNode(NodeId $id): ?Node
+    public function getNode(NodeIdContract $id): ?NodeContract
     {
         // Snapshot-uniform: getNode is answered from the hydrated spine like every
         // other read, never a bespoke live lookup.
         return $this->spine()->getNode($id);
     }
 
-    /** @return list<Node> */
+    /** @return list<NodeContract> */
     public function neighbours(
-        NodeId $of,
+        NodeIdContract $of,
         TraversalDirection $direction = TraversalDirection::Descendants,
         ?int $maxDepth = null,
     ): array {
@@ -99,13 +99,13 @@ class RelationalDriver extends AbstractDriver implements ComputeStore, Enumerabl
 
     // --- EnumerableStore (role 5) — dump the hydrated snapshot ---------------
 
-    /** @return list<Node> */
+    /** @return list<NodeContract> */
     public function nodes(): array
     {
         return $this->spine()->nodes();
     }
 
-    /** @return list<Edge> */
+    /** @return list<EdgeContract> */
     public function edges(): array
     {
         return $this->spine()->edges();
@@ -113,7 +113,7 @@ class RelationalDriver extends AbstractDriver implements ComputeStore, Enumerabl
 
     // --- ComputeStore (role 2) — delegate to the snapshot --------------------
 
-    public function shortestPath(NodeId $from, NodeId $to): ?Path
+    public function shortestPath(NodeIdContract $from, NodeIdContract $to): ?PathContract
     {
         return $this->spine()->shortestPath($from, $to);
     }
@@ -124,7 +124,7 @@ class RelationalDriver extends AbstractDriver implements ComputeStore, Enumerabl
         return $this->spine()->rank();
     }
 
-    /** @return list<Path> */
+    /** @return list<PathContract> */
     public function detectCycles(): array
     {
         return $this->spine()->detectCycles();

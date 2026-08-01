@@ -4,7 +4,7 @@ namespace Rushing\Graphine\Drivers;
 
 use Rushing\Graphine\Contracts\GovernedStore;
 use Rushing\Graphine\Contracts\GraphSource;
-use Rushing\Graphine\Dto\NodeId;
+use Rushing\Graphine\Contracts\NodeIdContract;
 use Rushing\Graphine\Enums\Capability;
 
 /**
@@ -50,7 +50,7 @@ class GovernedRelationalDriver extends RelationalDriver implements GovernedStore
         }
     }
 
-    public function assertGovernance(NodeId $node, float $gate): void
+    public function assertGovernance(NodeIdContract $node, float $gate): void
     {
         $this->spine()->assertGovernance($node, $gate);
     }
@@ -61,13 +61,13 @@ class GovernedRelationalDriver extends RelationalDriver implements GovernedStore
         return $this->spine()->governedRank();
     }
 
-    public function classify(NodeId $node, string $classIri): void
+    public function classify(NodeIdContract $node, string $classIri): void
     {
         $this->spine()->classify($node, $classIri);
     }
 
     /** @return list<string> */
-    public function reason(NodeId $node): array
+    public function reason(NodeIdContract $node): array
     {
         // The family ships the delegation SIGNATURE only — the reference spine
         // links no in-process reasoner (the seam guard forbids it). A consumer

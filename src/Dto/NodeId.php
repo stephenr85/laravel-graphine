@@ -2,16 +2,17 @@
 
 namespace Rushing\Graphine\Dto;
 
-use Stringable;
+use Rushing\Graphine\Contracts\NodeIdContract;
 
 /**
  * Opaque node identity. A value object rather than a bare string so the seam
  * can carry tenant scoping without leaking driver-specific key shapes
  * (Postgres UUID vs AGE graphid vs Neo4j elementId) across the contract.
  *
- * Role: cross-cutting (all roles address nodes by this).
+ * The shipped implementation of {@see NodeIdContract}. Role: cross-cutting (all
+ * roles address nodes by this).
  */
-class NodeId implements Stringable
+class NodeId implements NodeIdContract
 {
     public function __construct(
         public string $value,
@@ -22,9 +23,14 @@ class NodeId implements Stringable
         return new self($value);
     }
 
-    public function equals(self $other): bool
+    public function value(): string
     {
-        return $this->value === $other->value;
+        return $this->value;
+    }
+
+    public function equals(NodeIdContract $other): bool
+    {
+        return $this->value === $other->value();
     }
 
     public function __toString(): string

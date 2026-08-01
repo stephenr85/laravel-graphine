@@ -5,14 +5,15 @@ namespace Rushing\Graphine\Tests\Fixtures;
 use InvalidArgumentException;
 use Rushing\Graphine\Algorithms\TopologicalOrder;
 use Rushing\Graphine\Contracts\ComputeStore;
+use Rushing\Graphine\Contracts\EdgeContract;
+use Rushing\Graphine\Contracts\NodeContract;
+use Rushing\Graphine\Contracts\NodeIdContract;
+use Rushing\Graphine\Contracts\PathContract;
 use Rushing\Graphine\Contracts\QueryableStore;
+use Rushing\Graphine\Contracts\QueryResultContract;
 use Rushing\Graphine\Contracts\StructureStore;
 use Rushing\Graphine\Drivers\AbstractDriver;
 use Rushing\Graphine\Drivers\InMemoryDriver;
-use Rushing\Graphine\Dto\Edge;
-use Rushing\Graphine\Dto\Node;
-use Rushing\Graphine\Dto\NodeId;
-use Rushing\Graphine\Dto\Path;
 use Rushing\Graphine\Dto\QueryResult;
 use Rushing\Graphine\Enums\Capability;
 use Rushing\Graphine\Enums\QueryFormat;
@@ -51,31 +52,31 @@ class QueryingDriver extends AbstractDriver implements ComputeStore, QueryableSt
         return 'querying';
     }
 
-    public function putNode(Node $node): void
+    public function putNode(NodeContract $node): void
     {
         $this->spine->putNode($node);
     }
 
-    public function putEdge(Edge $edge): void
+    public function putEdge(EdgeContract $edge): void
     {
         $this->spine->putEdge($edge);
     }
 
-    public function getNode(NodeId $id): ?Node
+    public function getNode(NodeIdContract $id): ?NodeContract
     {
         return $this->spine->getNode($id);
     }
 
-    /** @return list<Node> */
+    /** @return list<NodeContract> */
     public function neighbours(
-        NodeId $of,
+        NodeIdContract $of,
         TraversalDirection $direction = TraversalDirection::Descendants,
         ?int $maxDepth = null,
     ): array {
         return $this->spine->neighbours($of, $direction, $maxDepth);
     }
 
-    public function shortestPath(NodeId $from, NodeId $to): ?Path
+    public function shortestPath(NodeIdContract $from, NodeIdContract $to): ?PathContract
     {
         return $this->spine->shortestPath($from, $to);
     }
@@ -86,7 +87,7 @@ class QueryingDriver extends AbstractDriver implements ComputeStore, QueryableSt
         return $this->spine->rank();
     }
 
-    /** @return list<Path> */
+    /** @return list<PathContract> */
     public function detectCycles(): array
     {
         return $this->spine->detectCycles();
@@ -104,7 +105,7 @@ class QueryingDriver extends AbstractDriver implements ComputeStore, QueryableSt
      *
      * @param  array<string,mixed>  $bindings
      */
-    public function query(QueryFormat $format, string $statement, array $bindings = []): QueryResult
+    public function query(QueryFormat $format, string $statement, array $bindings = []): QueryResultContract
     {
         if (! in_array($format, $this->formats, strict: true)) {
             throw new InvalidArgumentException(

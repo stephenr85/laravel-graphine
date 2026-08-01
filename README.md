@@ -143,6 +143,16 @@ compute from that bounded snapshot — a read-only consumer pays hydration once;
 consumer whose writes hit storage invalidates the snapshot so the next read
 re-hydrates.
 
+## Bring your own value types
+
+Every value type the seam passes — nodes, edges, identities, paths, query results —
+is an interface (`NodeContract`, `EdgeContract`, `NodeIdContract`, `PathContract`,
+`QueryResultContract`) that the shipped `Dto\*` classes implement. The contracts read
+state through methods (`$node->id()`, `$edge->weight()`), so a consumer can hand the
+seam its own representation — e.g. a spatie/laravel-data `Data` object — without
+adopting graphine's concrete DTOs. Reach for the shipped `Dto\*` classes unless you
+have a reason not to; the interfaces are the extension point.
+
 ## Registering your own driver
 
 For a backend the shipped drivers don't cover, the app resolves the **contract**,
@@ -194,7 +204,7 @@ src/
 ├── GraphStoreManager.php       Manager-driver hub — default 'memory' + extend()
 ├── GraphineServiceProvider.php
 ├── Algorithms/                 Pure kernels — Kahn topo-sort, Tarjan SCC, components (no store)
-├── Contracts/                  GraphStore + 4 role sub-contracts + the GraphSource seam
+├── Contracts/                  GraphStore + role sub-contracts, the GraphSource seam, + value-type contracts (Node/Edge/…)
 ├── Drivers/                    InMemoryDriver + the relational family (RelationalDriver, governed, factory)
 ├── Dto/                        Node, Edge (pure topology), NodeId, Path, QueryResult
 ├── Enums/                      Capability, QueryFormat, TraversalDirection

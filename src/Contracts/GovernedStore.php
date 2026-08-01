@@ -2,8 +2,6 @@
 
 namespace Rushing\Graphine\Contracts;
 
-use Rushing\Graphine\Dto\NodeId;
-
 /**
  * ROLE 4 — GOVERNANCE-AS-GATING. Optional, à-la-carte sub-contract layered
  * OVER the mandatory StructureStore + ComputeStore spine.
@@ -44,7 +42,7 @@ interface GovernedStore
      * host-side hint — graphine only guarantees it modulates governedRank().
      * Never a Node/Edge schema field.
      */
-    public function assertGovernance(NodeId $node, float $gate): void;
+    public function assertGovernance(NodeIdContract $node, float $gate): void;
 
     /**
      * Role-2 compute output MODULATED by the gate: `score = gate · computed`
@@ -64,7 +62,7 @@ interface GovernedStore
      * gate is never welded to the aspirational reasoning hook). A gating-only
      * consumer never calls this.
      */
-    public function classify(NodeId $node, string $classIri): void;
+    public function classify(NodeIdContract $node, string $classIri): void;
 
     /**
      * Optional: delegate OWL/rules inference to a PLUGGABLE backend behind a
@@ -74,5 +72,5 @@ interface GovernedStore
      *
      * @return list<string> inferred class IRIs
      */
-    public function reason(NodeId $node): array;
+    public function reason(NodeIdContract $node): array;
 }

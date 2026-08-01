@@ -2,8 +2,12 @@
 
 namespace Rushing\Graphine\Dto;
 
+use Rushing\Graphine\Contracts\EdgeContract;
+use Rushing\Graphine\Contracts\NodeIdContract;
+
 /**
- * A directed, optionally-weighted edge — PURE TOPOLOGY. Cross-cutting value type.
+ * A directed, optionally-weighted edge — PURE TOPOLOGY. Cross-cutting value type;
+ * the shipped implementation of {@see EdgeContract}.
  *
  * `weight` is the STRUCTURAL weight (role 1/2): role-1 requires weighted
  * relationships and role-2 (Dijkstra / weighted centrality) consumes them. It
@@ -14,7 +18,7 @@ namespace Rushing\Graphine\Dto;
  *
  * Roles: 1 (declare), 2 (weighted compute operand).
  */
-class Edge
+class Edge implements EdgeContract
 {
     public function __construct(
         public NodeId $from,
@@ -25,4 +29,29 @@ class Edge
         public float $weight = 1.0,
         public array $properties = [],
     ) {}
+
+    public function from(): NodeIdContract
+    {
+        return $this->from;
+    }
+
+    public function to(): NodeIdContract
+    {
+        return $this->to;
+    }
+
+    public function type(): string
+    {
+        return $this->type;
+    }
+
+    public function weight(): float
+    {
+        return $this->weight;
+    }
+
+    public function properties(): array
+    {
+        return $this->properties;
+    }
 }

@@ -4,8 +4,6 @@ namespace Rushing\Graphine\Contracts;
 
 use Rushing\Graphine\Algorithms\TopologicalOrder;
 use Rushing\Graphine\Algorithms\TopologicalSort;
-use Rushing\Graphine\Dto\NodeId;
-use Rushing\Graphine\Dto\Path;
 
 /**
  * ROLE 2 — Traverse & compute. Graph algorithms over the topology.
@@ -21,7 +19,7 @@ use Rushing\Graphine\Dto\Path;
 interface ComputeStore
 {
     /** Shortest weighted path (Dijkstra). Role 2. */
-    public function shortestPath(NodeId $from, NodeId $to): ?Path;
+    public function shortestPath(NodeIdContract $from, NodeIdContract $to): ?PathContract;
 
     /**
      * PageRank-style importance ranking.
@@ -30,7 +28,7 @@ interface ComputeStore
      */
     public function rank(): array;
 
-    /** Cycle detection. Returns cyclic Paths, empty if acyclic. Role 1/2. @return list<Path> */
+    /** Cycle detection. Returns cyclic Paths, empty if acyclic. Role 1/2. @return list<PathContract> */
     public function detectCycles(): array;
 
     /**

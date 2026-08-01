@@ -2,9 +2,6 @@
 
 namespace Rushing\Graphine\Contracts;
 
-use Rushing\Graphine\Dto\Edge;
-use Rushing\Graphine\Dto\Node;
-
 /**
  * ROLE 5 — OPTIONAL whole-snapshot enumeration. A bounded DUMP, not a walk.
  *
@@ -37,14 +34,14 @@ interface EnumerableStore
     /**
      * Every node in the bounded snapshot, in no guaranteed order.
      *
-     * @return list<Node>
+     * @return list<NodeContract>
      */
     public function nodes(): array;
 
     /**
      * Every edge in the bounded snapshot, in no guaranteed order.
      *
-     * @return list<Edge>
+     * @return list<EdgeContract>
      */
     public function edges(): array;
 }
