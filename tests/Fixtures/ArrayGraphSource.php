@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Tests\Fixtures;
 
 use Rushing\Graphine\Contracts\GraphSource;
@@ -21,7 +19,7 @@ use Rushing\Graphine\Dto\NodeId;
  * conformance kit seed its own fixtures through `putNode`/`putEdge`, proving the
  * family passes the same laws the in-memory reference driver does.
  */
-final class ArrayGraphSource implements GraphSource
+class ArrayGraphSource implements GraphSource
 {
     /**
      * @param  list<Node>  $nodes
@@ -29,10 +27,10 @@ final class ArrayGraphSource implements GraphSource
      * @param  list<array{0: NodeId, 1: float}>  $gates
      */
     public function __construct(
-        private readonly array $nodes = [],
-        private readonly array $edges = [],
-        private readonly array $gates = [],
-        private readonly bool $governed = false,
+        private array $nodes = [],
+        private array $edges = [],
+        private array $gates = [],
+        private bool $governed = false,
     ) {}
 
     /** @return iterable<Node> */

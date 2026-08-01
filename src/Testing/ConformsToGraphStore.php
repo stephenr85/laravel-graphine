@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Testing;
 
 use Rushing\Graphine\Contracts\ComputeStore;
@@ -25,7 +23,7 @@ use Rushing\Graphine\Enums\TraversalDirection;
  * TestCase that the abstract base class could never extend (PHP is single-
  * inheritance). The consumer does:
  *
- *   final class MyDriverConformanceTest extends \Tests\TestCase
+ *   class MyDriverConformanceTest extends \Tests\TestCase
  *   {
  *       use ConformsToGraphStore;
  *       protected function createDriver(): GraphStore { return new MyDriver(...); }

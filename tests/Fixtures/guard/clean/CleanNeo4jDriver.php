@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Tests\Fixtures\Guard\Clean;
 
 // CLEAN: imports only the MIT Bolt CLIENT (Laudis\Neo4j\*), which talks to the
@@ -9,7 +7,7 @@ namespace Rushing\Graphine\Tests\Fixtures\Guard\Clean;
 // so the seam guard must pass this file.
 use Laudis\Neo4j\ClientBuilder;
 
-final class CleanNeo4jDriver
+class CleanNeo4jDriver
 {
     public function connect(): void
     {

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Drivers;
 
 use Rushing\Graphine\Contracts\ComputeStore;
@@ -58,8 +56,8 @@ class RelationalDriver extends AbstractDriver implements ComputeStore, Enumerabl
     ];
 
     public function __construct(
-        protected readonly GraphSource $source,
-        private readonly string $driverName = 'relational',
+        protected GraphSource $source,
+        private string $driverName = 'relational',
     ) {
         $this->spine = new InMemoryDriver;
     }

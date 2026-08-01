@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Testing;
 
 use PhpParser\Node;
@@ -33,7 +31,7 @@ use PhpParser\ParserFactory;
  * It needs a nikic/php-parser-providing host (suggest-only dep), exactly as
  * GraphStoreConformance needs a phpunit-providing host.
  */
-final class SeamGuard
+class SeamGuard
 {
     /**
      * The seam boundary, as concrete namespace prefixes. Each entry names an

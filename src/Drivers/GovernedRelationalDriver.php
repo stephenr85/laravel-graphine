@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Drivers;
 
 use Rushing\Graphine\Contracts\GovernedStore;

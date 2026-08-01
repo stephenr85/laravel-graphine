@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Drivers;
 
 use Rushing\Graphine\Contracts\ComputeStore;
@@ -35,7 +33,7 @@ use Rushing\Graphine\Enums\TraversalDirection;
  *
  * @see docs 01 §A — graphp/graph → in-memory driver
  */
-final class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableStore, GovernedStore, StructureStore
+class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableStore, GovernedStore, StructureStore
 {
     /** @var array<string,Node> */
     private array $nodes = [];

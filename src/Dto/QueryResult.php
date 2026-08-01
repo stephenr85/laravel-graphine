@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Dto;
 
 /**
@@ -12,7 +10,7 @@ namespace Rushing\Graphine\Dto;
  * This is deliberately thin: role 3's contract is "adopt the FORMAT", so the
  * seam passes the query language through rather than re-abstracting it.
  */
-final readonly class QueryResult
+class QueryResult
 {
     public function __construct(
         /** @var list<array<string,mixed>> */

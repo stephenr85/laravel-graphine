@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 use Rushing\Graphine\Testing\SeamGuard;
 
 it('passes a clean driver that imports only the MIT Bolt client', function () {
@@ -29,7 +27,7 @@ it('detects a group-use leak, not just a plain use', function () {
         <?php
         namespace App\Graph\Drivers;
         use Pellet\{Reasoner, Config};
-        final class Leaky {}
+        class Leaky {}
         PHP);
 
     try {

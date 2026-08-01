@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Tests;
 
 use Rushing\Graphine\Contracts\GraphStore;
@@ -18,7 +16,7 @@ use Rushing\Graphine\Tests\Fixtures\ArrayGraphSource;
  * pass-through) in addition to the spine — proving the factory picks the role-4
  * member by type.
  */
-final class GovernedRelationalDriverConformanceTest extends GraphStoreConformance
+class GovernedRelationalDriverConformanceTest extends GraphStoreConformance
 {
     protected function createDriver(): GraphStore
     {

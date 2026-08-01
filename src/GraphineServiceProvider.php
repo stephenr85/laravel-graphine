@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine;
 
 use Illuminate\Support\ServiceProvider;
@@ -19,7 +17,7 @@ use Rushing\Graphine\Contracts\GraphStore;
  *
  * (Skeleton: paths/publishing are illustrative, not wired to a real package.)
  */
-final class GraphineServiceProvider extends ServiceProvider
+class GraphineServiceProvider extends ServiceProvider
 {
     public function register(): void
     {

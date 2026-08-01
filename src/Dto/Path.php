@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Dto;
 
 /**
@@ -9,7 +7,7 @@ namespace Rushing\Graphine\Dto;
  * with the accumulated cost, so callers get a format-agnostic answer whether
  * the compute ran in graphp/graph, a recursive CTE, or rustworkx.
  */
-final readonly class Path
+class Path
 {
     public function __construct(
         /** @var list<NodeId> ordered node walk, source first */

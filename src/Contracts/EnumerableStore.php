@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Contracts;
 
 use Rushing\Graphine\Dto\Edge;

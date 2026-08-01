@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 use Rushing\Graphine\Drivers\InMemoryDriver;
 use Rushing\Graphine\Dto\Edge;
 use Rushing\Graphine\Dto\Node;

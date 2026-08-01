@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 use Rushing\Graphine\Contracts\GraphStore;
 use Rushing\Graphine\Drivers\InMemoryDriver;
 use Rushing\Graphine\GraphStoreManager;

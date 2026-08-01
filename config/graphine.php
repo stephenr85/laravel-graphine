@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * Graphine package config — laravel-popcorn-style driver selection.
  *

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Tests\Fixtures;
 
 use Rushing\Graphine\Contracts\ComputeStore;
@@ -26,9 +24,9 @@ use Rushing\Graphine\Enums\TraversalDirection;
  * Behaviour is delegated to an in-memory spine so the fixture stays about the
  * SHAPE (which roles it exposes), not a re-implemented algorithm.
  */
-final class SpineOnlyDriver extends AbstractDriver implements ComputeStore, StructureStore
+class SpineOnlyDriver extends AbstractDriver implements ComputeStore, StructureStore
 {
-    private readonly InMemoryDriver $spine;
+    private InMemoryDriver $spine;
 
     /** @var list<Capability> */
     protected array $capabilities = [

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Tests\Feature;
 
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +16,7 @@ use Rushing\Graphine\Tests\TestCase;
  * spine — proving the config-driven source integrates with the family and passes
  * the same spine laws as every other driver, inside a real DB connection.
  */
-final class AdjacencyListConformanceTest extends TestCase
+class AdjacencyListConformanceTest extends TestCase
 {
     use ConformsToGraphStore;
 

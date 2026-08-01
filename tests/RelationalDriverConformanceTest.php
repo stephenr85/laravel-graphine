@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Tests;
 
 use Rushing\Graphine\Contracts\GraphStore;
@@ -17,7 +15,7 @@ use Rushing\Graphine\Tests\Fixtures\ArrayGraphSource;
  * the spine laws and SKIPS the optional governance / query sections — the
  * à-la-carte-by-type law, now upheld by the factory-picked family member.
  */
-final class RelationalDriverConformanceTest extends GraphStoreConformance
+class RelationalDriverConformanceTest extends GraphStoreConformance
 {
     protected function createDriver(): GraphStore
     {

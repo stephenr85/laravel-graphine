@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Dto;
 
 /**
@@ -16,7 +14,7 @@ namespace Rushing\Graphine\Dto;
  *
  * Roles: 1 (declare), 2 (weighted compute operand).
  */
-final readonly class Edge
+class Edge
 {
     public function __construct(
         public NodeId $from,

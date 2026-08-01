@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Tests\Fixtures;
 
 use InvalidArgumentException;
@@ -28,9 +26,9 @@ use Rushing\Graphine\Enums\TraversalDirection;
  * rows. The seam never re-abstracts the query language — that is the whole point
  * of "adopt the format, don't reinvent it" (ticket 04 point 5).
  */
-final class QueryingDriver extends AbstractDriver implements ComputeStore, QueryableStore, StructureStore
+class QueryingDriver extends AbstractDriver implements ComputeStore, QueryableStore, StructureStore
 {
-    private readonly InMemoryDriver $spine;
+    private InMemoryDriver $spine;
 
     /** @var list<Capability> */
     protected array $capabilities = [

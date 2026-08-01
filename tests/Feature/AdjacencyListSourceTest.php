@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Support\Facades\Schema;
 use Rushing\Graphine\Contracts\GovernedStore;

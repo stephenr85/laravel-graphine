@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine;
 
 use Illuminate\Support\Manager;
@@ -28,7 +26,7 @@ use Rushing\Graphine\Drivers\InMemoryDriver;
  *
  * @see docs 02 — "config picks the default driver; runtime extend() adds more"
  */
-final class GraphStoreManager extends Manager
+class GraphStoreManager extends Manager
 {
     public function getDefaultDriver(): string
     {

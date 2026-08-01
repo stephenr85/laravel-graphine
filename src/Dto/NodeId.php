@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Dto;
 
 use Stringable;
@@ -13,7 +11,7 @@ use Stringable;
  *
  * Role: cross-cutting (all roles address nodes by this).
  */
-final readonly class NodeId implements Stringable
+class NodeId implements Stringable
 {
     public function __construct(
         public string $value,

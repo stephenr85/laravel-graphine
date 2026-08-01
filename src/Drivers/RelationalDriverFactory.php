@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Drivers;
 
 use Rushing\Graphine\Contracts\GraphSource;
@@ -20,7 +18,7 @@ use Rushing\Graphine\Contracts\GraphSource;
  * A consumer registers a driver with one line:
  *   $manager->extend('circuits', fn () => RelationalDriverFactory::make($source, 'circuits'));
  */
-final class RelationalDriverFactory
+class RelationalDriverFactory
 {
     public static function make(GraphSource $source, string $name = 'relational'): RelationalDriver
     {

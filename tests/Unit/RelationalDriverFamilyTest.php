@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
@@ -23,7 +21,7 @@ use Rushing\Graphine\Tests\Fixtures\ArrayGraphSource;
  * BOTH members (build ticket 04 à-la-carte law), snapshot hydration from a
  * populated source, and gate loading from the source (not seeded by the caller).
  */
-final class RelationalDriverFamilyTest extends TestCase
+class RelationalDriverFamilyTest extends TestCase
 {
     public function test_factory_selects_the_spine_only_member_for_an_ungoverned_source(): void
     {

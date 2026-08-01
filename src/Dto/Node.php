@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Dto;
 
 /**
@@ -18,7 +16,7 @@ namespace Rushing\Graphine\Dto;
  *
  * Roles: 1 (declare), 2 (compute operand).
  */
-final readonly class Node
+class Node
 {
     public function __construct(
         public NodeId $id,

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Rushing\Graphine\Sources;
 
 use Illuminate\Database\ConnectionInterface;
@@ -70,16 +68,16 @@ use Rushing\Graphine\Dto\NodeId;
  * OPTIONAL gate (either mode):
  *   'gate' => ['column' => 'asserted_weight']   // on the node table
  */
-final class AdjacencyListSource implements GraphSource
+class AdjacencyListSource implements GraphSource
 {
     /**
      * @param  array<string,mixed>  $config
      * @param  string|null  $connection  connection name; null = default (the tenant connection)
      */
     public function __construct(
-        private readonly ConnectionResolverInterface $resolver,
-        private readonly array $config,
-        private readonly ?string $connection = null,
+        private ConnectionResolverInterface $resolver,
+        private array $config,
+        private ?string $connection = null,
     ) {}
 
     /** @return iterable<Node> */
