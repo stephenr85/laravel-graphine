@@ -2,9 +2,6 @@
 
 namespace Rushing\Graphine\Contracts;
 
-use Rushing\Graphine\Algorithms\TopologicalOrder;
-use Rushing\Graphine\Algorithms\TopologicalSort;
-
 /**
  * ROLE 2 — Traverse & compute. Graph algorithms over the topology.
  *
@@ -30,12 +27,4 @@ interface ComputeStore
 
     /** Cycle detection. Returns cyclic Paths, empty if acyclic. Role 1/2. @return list<PathContract> */
     public function detectCycles(): array;
-
-    /**
-     * Topological ordering (Kahn). Role 2. Orders nodes source-first along edge
-     * direction — for an edge u→v, u precedes v — and reports any nodes trapped
-     * in or behind a cycle in {@see TopologicalOrder::$cyclic} rather than
-     * throwing. The pure kernel is {@see TopologicalSort}.
-     */
-    public function topologicalSort(): TopologicalOrder;
 }

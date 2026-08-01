@@ -102,12 +102,11 @@ provider:
 - `ConnectedComponents::compute()` → weakly-connected components (edges read
   undirected).
 
-Role 2 surfaces the ordering on the seam as well: `ComputeStore::topologicalSort()`
-runs the same kernel over a driver's own topology. So a store consumer reaches it
-through the contract and a bare caller reaches the kernel directly — one
-implementation, two entry points. These kernels are the only code here that
-depends on no graphine abstraction; they live in the package because the
-reference driver and its consumers both need them.
+These kernels are the only code here that depends on no graphine abstraction —
+plain functions, no store, no service provider. They deliberately stay OFF the
+`GraphStore` role contracts: a caller reaches for the kernel directly rather than
+asking a driver to order itself, so the mandatory spine keeps to traversal/rank/
+paths and doesn't grow an ordering method every driver must implement.
 
 ## Graph any relational table out of the box
 

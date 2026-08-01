@@ -161,39 +161,6 @@ trait ConformsToGraphStore
     }
 
     /**
-     * TOPOLOGICAL ORDER (role 2). A DAG orders every node source-first along
-     * edge direction (for edge u→v, u precedes v) with no cycle remainder; a
-     * graph with a cycle reports the trapped nodes in `cyclic` rather than
-     * throwing. Asserts the ordering law across driver tiers.
-     */
-    public function test_topological_sort_orders_by_edge_direction(): void
-    {
-        $driver = $this->createDriver();
-        if (! $driver instanceof ComputeStore) {
-            $this->markTestSkipped('driver does not implement ComputeStore (role 2)');
-        }
-        if (! $driver instanceof StructureStore) {
-            $this->markTestSkipped('needs StructureStore to seed nodes');
-        }
-
-        foreach (['a', 'b', 'c'] as $id) {
-            $driver->putNode(new Node(NodeId::of($id), 'Entity'));
-        }
-        $driver->putEdge(new Edge(NodeId::of('a'), NodeId::of('b'), 'LINKS'));
-        $driver->putEdge(new Edge(NodeId::of('b'), NodeId::of('c'), 'LINKS'));
-
-        $order = $driver->topologicalSort();
-        $this->assertFalse($order->hasCycle(), 'a DAG has no cycle remainder');
-        $this->assertSame(['a', 'b', 'c'], $order->sorted, 'nodes ordered source-first along edges');
-
-        // Introduce a back-edge → the participating nodes fall into `cyclic`.
-        $driver->putEdge(new Edge(NodeId::of('c'), NodeId::of('a'), 'LINKS'));
-        $cyclicOrder = $driver->topologicalSort();
-        $this->assertTrue($cyclicOrder->hasCycle(), 'a back-edge is reported, not thrown');
-        $this->assertContains('a', $cyclicOrder->cyclic);
-    }
-
-    /**
      * THE GOVERNANCE-AS-GATING LAW — a CENTRAL node silenced. Only
      * for drivers that opt into role 4 by TYPE (the type-level opt-in that
      * replaced the nullable `?Coherence` field). A gate of 0.0 silences a node

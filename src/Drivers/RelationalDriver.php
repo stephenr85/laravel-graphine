@@ -2,7 +2,6 @@
 
 namespace Rushing\Graphine\Drivers;
 
-use Rushing\Graphine\Algorithms\TopologicalOrder;
 use Rushing\Graphine\Contracts\ComputeStore;
 use Rushing\Graphine\Contracts\EdgeContract;
 use Rushing\Graphine\Contracts\EnumerableStore;
@@ -128,11 +127,6 @@ class RelationalDriver extends AbstractDriver implements ComputeStore, Enumerabl
     public function detectCycles(): array
     {
         return $this->spine()->detectCycles();
-    }
-
-    public function topologicalSort(): TopologicalOrder
-    {
-        return $this->spine()->topologicalSort();
     }
 
     // --- Snapshot lifecycle ---------------------------------------------------

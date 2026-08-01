@@ -2,8 +2,6 @@
 
 namespace Rushing\Graphine\Drivers;
 
-use Rushing\Graphine\Algorithms\TopologicalOrder;
-use Rushing\Graphine\Algorithms\TopologicalSort;
 use Rushing\Graphine\Contracts\ComputeStore;
 use Rushing\Graphine\Contracts\EdgeContract;
 use Rushing\Graphine\Contracts\EnumerableStore;
@@ -332,19 +330,6 @@ class InMemoryDriver extends AbstractDriver implements ComputeStore, EnumerableS
         }
 
         return $cycles;
-    }
-
-    public function topologicalSort(): TopologicalOrder
-    {
-        // Successor adjacency straight off the directed edge list: edge from→to
-        // means `from` precedes `to`. The pure kernel does the ordering + cycle
-        // remainder; the reference driver just marshals its snapshot into it.
-        $adjacency = [];
-        foreach ($this->edges as $edge) {
-            $adjacency[$edge->from()->value()][] = $edge->to()->value();
-        }
-
-        return TopologicalSort::kahn(array_keys($this->nodes), $adjacency);
     }
 
     // --- GovernedStore (role 4 — governance-as-gating) ----------------------

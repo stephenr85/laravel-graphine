@@ -3,7 +3,6 @@
 namespace Rushing\Graphine\Tests\Fixtures;
 
 use InvalidArgumentException;
-use Rushing\Graphine\Algorithms\TopologicalOrder;
 use Rushing\Graphine\Contracts\ComputeStore;
 use Rushing\Graphine\Contracts\EdgeContract;
 use Rushing\Graphine\Contracts\NodeContract;
@@ -91,11 +90,6 @@ class QueryingDriver extends AbstractDriver implements ComputeStore, QueryableSt
     public function detectCycles(): array
     {
         return $this->spine->detectCycles();
-    }
-
-    public function topologicalSort(): TopologicalOrder
-    {
-        return $this->spine->topologicalSort();
     }
 
     /**
