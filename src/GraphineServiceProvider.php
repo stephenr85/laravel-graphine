@@ -2,8 +2,10 @@
 
 namespace Rushing\Graphine\Laravel;
 
+use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 use Rushing\Graphine\Contracts\GraphStore;
+use Rushing\Graphine\Laravel\Facades\Graph;
 
 /**
  * Package service provider. Binds the Manager as a singleton and aliases the
@@ -31,6 +33,10 @@ class GraphineServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if (class_exists(AliasLoader::class)) {
+            AliasLoader::getInstance()->alias('Graph', Graph::class);
+        }
+
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../config/graphine.php' => config_path('graphine.php'),
