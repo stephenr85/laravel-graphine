@@ -11,6 +11,7 @@
     ],
     "require": {
         "php": "^8.3",
+        "rushing/php-graphine": "dev-main",
         "illuminate/contracts": "^11.0 || ^12.0 || ^13.0",
         "illuminate/database": "^11.0 || ^12.0 || ^13.0",
         "illuminate/support": "^11.0 || ^12.0 || ^13.0"
@@ -30,7 +31,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Rushing\\Graphine\\": "src/"
+            "Rushing\\Graphine\\Laravel\\": "src/"
         }
     },
     "autoload-dev": {
@@ -41,7 +42,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Rushing\\Graphine\\GraphineServiceProvider"
+                "Rushing\\Graphine\\Laravel\\GraphineServiceProvider"
             ]
         }
     },
@@ -51,6 +52,15 @@
         },
         "sort-packages": true
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../php-graphine",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {

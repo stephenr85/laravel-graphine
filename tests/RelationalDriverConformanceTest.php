@@ -3,8 +3,8 @@
 namespace Rushing\Graphine\Tests;
 
 use Rushing\Graphine\Contracts\GraphStore;
-use Rushing\Graphine\Drivers\RelationalDriver;
-use Rushing\Graphine\Drivers\RelationalDriverFactory;
+use Rushing\Graphine\Laravel\Drivers\RelationalDriver;
+use Rushing\Graphine\Laravel\Drivers\RelationalDriverFactory;
 use Rushing\Graphine\Testing\GraphStoreConformance;
 use Rushing\Graphine\Tests\Fixtures\ArrayGraphSource;
 

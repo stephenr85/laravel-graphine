@@ -6,13 +6,13 @@ use PHPUnit\Framework\TestCase;
 use Rushing\Graphine\Contracts\EnumerableStore;
 use Rushing\Graphine\Contracts\GovernedStore;
 use Rushing\Graphine\Contracts\QueryableStore;
-use Rushing\Graphine\Drivers\GovernedRelationalDriver;
-use Rushing\Graphine\Drivers\RelationalDriver;
-use Rushing\Graphine\Drivers\RelationalDriverFactory;
 use Rushing\Graphine\Dto\Edge;
 use Rushing\Graphine\Dto\Node;
 use Rushing\Graphine\Dto\NodeId;
 use Rushing\Graphine\Enums\Capability;
+use Rushing\Graphine\Laravel\Drivers\GovernedRelationalDriver;
+use Rushing\Graphine\Laravel\Drivers\RelationalDriver;
+use Rushing\Graphine\Laravel\Drivers\RelationalDriverFactory;
 use Rushing\Graphine\Tests\Fixtures\ArrayGraphSource;
 
 /**

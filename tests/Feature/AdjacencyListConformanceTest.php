@@ -4,8 +4,8 @@ namespace Rushing\Graphine\Tests\Feature;
 
 use Illuminate\Support\Facades\Schema;
 use Rushing\Graphine\Contracts\GraphStore;
-use Rushing\Graphine\Drivers\RelationalDriverFactory;
-use Rushing\Graphine\Sources\AdjacencyListSource;
+use Rushing\Graphine\Laravel\Drivers\RelationalDriverFactory;
+use Rushing\Graphine\Laravel\Sources\AdjacencyListSource;
 use Rushing\Graphine\Testing\ConformsToGraphStore;
 use Rushing\Graphine\Tests\TestCase;
 

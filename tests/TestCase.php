@@ -3,7 +3,7 @@
 namespace Rushing\Graphine\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
-use Rushing\Graphine\GraphineServiceProvider;
+use Rushing\Graphine\Laravel\GraphineServiceProvider;
 
 abstract class TestCase extends Orchestra
 {

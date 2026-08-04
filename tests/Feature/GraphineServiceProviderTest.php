@@ -2,7 +2,7 @@
 
 use Rushing\Graphine\Contracts\GraphStore;
 use Rushing\Graphine\Drivers\InMemoryDriver;
-use Rushing\Graphine\GraphStoreManager;
+use Rushing\Graphine\Laravel\GraphStoreManager;
 
 it('boots the provider and resolves the manager as a singleton', function () {
     $manager = app(GraphStoreManager::class);

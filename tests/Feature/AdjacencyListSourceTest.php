@@ -3,12 +3,12 @@
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Support\Facades\Schema;
 use Rushing\Graphine\Contracts\GovernedStore;
-use Rushing\Graphine\Drivers\GovernedRelationalDriver;
-use Rushing\Graphine\Drivers\RelationalDriver;
-use Rushing\Graphine\Drivers\RelationalDriverFactory;
 use Rushing\Graphine\Dto\NodeId;
 use Rushing\Graphine\Enums\TraversalDirection;
-use Rushing\Graphine\Sources\AdjacencyListSource;
+use Rushing\Graphine\Laravel\Drivers\GovernedRelationalDriver;
+use Rushing\Graphine\Laravel\Drivers\RelationalDriver;
+use Rushing\Graphine\Laravel\Drivers\RelationalDriverFactory;
+use Rushing\Graphine\Laravel\Sources\AdjacencyListSource;
 
 // AdjacencyListSource covers BOTH relational edge
 // encodings (separate edge table + self-referential FK), config-only, and its

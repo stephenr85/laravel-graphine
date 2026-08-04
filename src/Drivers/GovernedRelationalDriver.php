@@ -1,6 +1,6 @@
 <?php
 
-namespace Rushing\Graphine\Drivers;
+namespace Rushing\Graphine\Laravel\Drivers;
 
 use Rushing\Graphine\Contracts\GovernedStore;
 use Rushing\Graphine\Contracts\GraphSource;

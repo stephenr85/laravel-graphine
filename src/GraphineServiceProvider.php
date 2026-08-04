@@ -1,6 +1,6 @@
 <?php
 
-namespace Rushing\Graphine;
+namespace Rushing\Graphine\Laravel;
 
 use Illuminate\Support\ServiceProvider;
 use Rushing\Graphine\Contracts\GraphStore;

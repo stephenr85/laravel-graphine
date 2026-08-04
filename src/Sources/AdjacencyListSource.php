@@ -1,6 +1,6 @@
 <?php
 
-namespace Rushing\Graphine\Sources;
+namespace Rushing\Graphine\Laravel\Sources;
 
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
