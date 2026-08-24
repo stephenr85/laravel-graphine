@@ -4,12 +4,20 @@ namespace Rushing\Graphine\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
 use Rushing\Graphine\Laravel\GraphineServiceProvider;
+use Rushing\Popcorn\Laravel\PopcornServiceProvider;
 
 abstract class TestCase extends Orchestra
 {
+    /**
+     * `PopcornServiceProvider` is listed explicitly and must stay listed. Requiring
+     * `rushing/laravel-popcorn` is not booting it — testbench does not auto-discover package providers,
+     * and `RegistryIndex` is auto-resolvable, so without this line `make(RegistryIndex::class)` hands
+     * back a FRESH index per call and anything described into it is written to an object nobody reads:
+     * a green suite over an empty index (registry-kernel ticket 27 D3).
+     */
     protected function getPackageProviders($app): array
     {
-        return [GraphineServiceProvider::class];
+        return [PopcornServiceProvider::class, GraphineServiceProvider::class];
     }
 
     /**
