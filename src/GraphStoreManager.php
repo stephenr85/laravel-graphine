@@ -79,7 +79,10 @@ class GraphStoreManager extends Manager implements Gated, Registry
     {
         parent::__construct($container);
 
-        $this->stores = new BasicRegistry($this->declaration());
+        // `for()` reads the nearest `#[IsRegistry]` at or above the runtime class, so an anonymous
+        // subclass — a live idiom in this package's own suite — still composes. That walk used to be
+        // hand-rolled here; registry-kernel ticket 42 landed it in `IsRegistry::of()`.
+        $this->stores = BasicRegistry::for($this);
 
         // The reference driver is an entry like any other. Registering it here rather than leaning on
         // `createMemoryDriver()` being found by convention is what lets `keys()` report it without
@@ -183,35 +186,6 @@ class GraphStoreManager extends Manager implements Gated, Registry
     }
 
     /**
-     * The nearest `#[IsRegistry]` at or above the runtime class.
-     *
-     * `BasicRegistry::for($this)` would read `static::class` and find nothing the moment a consumer
-     * subclasses the manager — PHP does not inherit attributes, and swapping in an anonymous subclass
-     * is a live test idiom in this package. So the walk is here, and `driverName()` reads the same
-     * declaration rather than the constant.
-     *
-     * **This is a local hand-roll of a decision already taken elsewhere**: registry-kernel ticket 41
-     * D11 settled *walk up, nearest wins* and handed the landing to ticket 42, which is what makes both
-     * conformance audits see a bound subclass. Until 42 lands, this manager RESOLVES correctly under a
-     * subclass while the audits still cannot see one — delete this method when `IsRegistry::of()` walks.
-     */
-    private function declaration(): IsRegistry
-    {
-        for ($class = static::class; $class !== false; $class = get_parent_class($class)) {
-            $declaration = IsRegistry::of($class);
-
-            if ($declaration !== null) {
-                return $declaration;
-            }
-        }
-
-        throw new InvalidArgumentException(sprintf(
-            '`%s` and none of its parents carries an #[IsRegistry] declaration.',
-            static::class,
-        ));
-    }
-
-    /**
      * A registry key as the bare driver name `Manager` indexes by.
      *
      * Strips the declared root where the caller spelled an absolute key, and refuses anything deeper
@@ -221,7 +195,7 @@ class GraphStoreManager extends Manager implements Gated, Registry
     private function driverName(RegistryKey|string $key): string
     {
         $segments = ($key instanceof RegistryKey ? $key : Key::parse($key))->segments();
-        $root = $this->declaration()->rootKey()->segments();
+        $root = $this->stores->declaration()->rootKey()->segments();
 
         if (array_slice($segments, 0, count($root)) === $root) {
             $segments = array_slice($segments, count($root));
