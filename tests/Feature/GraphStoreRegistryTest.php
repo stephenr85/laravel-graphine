@@ -16,7 +16,7 @@ it('is a Registry declaring root graph.stores', function () {
     expect(app(GraphStoreManager::class))->toBeInstanceOf(Registry::class)
         ->and($declaration)->not->toBeNull()
         ->and($declaration->root)->toBe('graph.stores')
-        ->and($declaration->arity)->toBe(RegistryArity::PickOne)
+        ->and($declaration->arity)->toBe([RegistryArity::PickOne])
         ->and($declaration->onDuplicate)->toBe(OnDuplicate::Supersede);
 });
 
