@@ -9,7 +9,6 @@ use Rushing\Graphine\Testing\ConformsToGraphStore;
 use Rushing\Graphine\Tests\TestCase;
 use Rushing\Popcorn\Registries\BasicRegistry;
 use Rushing\Popcorn\Registries\IsRegistry;
-use Rushing\Popcorn\Registries\RegistryArity;
 
 /**
  * `RegistryGraphSource` certifies through the driver family against the SHIPPED conformance
@@ -26,8 +25,7 @@ class RegistryGraphConformanceTest extends TestCase
     {
         $registry = new BasicRegistry(new IsRegistry(
             root: 'conformance',
-            of: 'string',
-            arity: RegistryArity::PickOne,
+            description: 'string',
         ));
 
         return RelationalDriverFactory::make(new RegistryGraphSource($registry), 'registry');

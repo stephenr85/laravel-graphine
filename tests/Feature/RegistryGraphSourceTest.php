@@ -12,7 +12,6 @@ use Rushing\Graphine\Tests\TestCase;
 use Rushing\Popcorn\Registries\Authorizer;
 use Rushing\Popcorn\Registries\BasicRegistry;
 use Rushing\Popcorn\Registries\IsRegistry;
-use Rushing\Popcorn\Registries\RegistryArity;
 use Rushing\Popcorn\Registries\RegistryIndex;
 use Rushing\Popcorn\Registries\RegistryKey;
 
@@ -22,8 +21,7 @@ class RegistryGraphSourceTest extends TestCase
     {
         return new BasicRegistry(new IsRegistry(
             root: $root,
-            of: 'string',
-            arity: RegistryArity::PickOne,
+            description: 'string',
         ));
     }
 
@@ -110,8 +108,7 @@ class RegistryGraphSourceTest extends TestCase
     {
         $registry = new BasicRegistry(new IsRegistry(
             root: 'ns',
-            of: 'string',
-            arity: RegistryArity::PickOne,
+            description: 'string',
         ));
 
         // A foreign key is never stamped with the root (ticket 20 D3) and never parsed.
@@ -135,8 +132,7 @@ class RegistryGraphSourceTest extends TestCase
     {
         $registry = new BasicRegistry(new IsRegistry(
             root: 'ns',
-            of: 'string',
-            arity: RegistryArity::PickOne,
+            description: 'string',
         ));
 
         $registry->register(new UriKey(['a.b', 'c'], 'one'), 'x');
