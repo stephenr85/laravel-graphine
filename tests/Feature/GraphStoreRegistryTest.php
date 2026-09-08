@@ -5,7 +5,7 @@ use Rushing\Graphine\Drivers\InMemoryDriver;
 use Rushing\Graphine\Laravel\GraphStoreManager;
 use Rushing\Popcorn\Registries\IsRegistry;
 use Rushing\Popcorn\Registries\Key;
-use Rushing\Popcorn\Registries\OnDuplicate;
+use Rushing\Popcorn\Registries\OnKeyDuplicate;
 use Rushing\Popcorn\Registries\Registry;
 use Rushing\Popcorn\Registries\RegistryIndex;
 
@@ -15,7 +15,7 @@ it('is a Registry declaring root graph.stores', function () {
     expect(app(GraphStoreManager::class))->toBeInstanceOf(Registry::class)
         ->and($declaration)->not->toBeNull()
         ->and($declaration->root)->toBe('graph.stores')
-        ->and($declaration->onDuplicate)->toBe(OnDuplicate::Supersede);
+        ->and($declaration->onKeyDuplicate)->toBe(OnKeyDuplicate::Supersede);
 });
 
 it('still extends Manager, so the defaulted read and __call proxying are untouched', function () {
