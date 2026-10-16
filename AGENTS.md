@@ -1,4 +1,4 @@
-> You are in **rushing/laravel-graphine** — a pluggable Laravel graph-substrate seam: the `GraphStore` contract + role sub-contracts + value types + one in-memory reference driver + a conformance test-kit.
+> You are in **rushing/laravel-graphine** — the Laravel adapter over `rushing/php-graphine` (which owns the `GraphStore` contract, sub-contracts, value types, reference driver and conformance kit): relational/registry sources + the `GraphStoreManager`.
 
 Ships zero persistence drivers — real drivers are the consumer's, authored over its own wheel.
 

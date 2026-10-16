@@ -32,7 +32,7 @@ use Rushing\Popcorn\Registries\RegistryKey;
  * GovernedRelationalDriver, factory-selected over a GraphSource — so a consumer
  * can graph any relational table out of the box. Specialized backends (AGE,
  * Neo4j, Python heavy-compute) stay the CONSUMER's, registered via extend() —
- * see examples/app-drivers/ for worked, app-side examples.
+ * worked driver examples live with the contract: rushing/php-graphine (reference driver + conformance kit).
  *
  * ## It is also a `Registry`, natively (registry-kernel ticket 10 D2/D3)
  *
