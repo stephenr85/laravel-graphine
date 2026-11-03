@@ -1,0 +1,85 @@
+---
+title: Graph stores
+segment: graph.stores
+nav_order: 100
+excerpt: The graph-store drivers behind the GraphStore contract, as the factories that build them.
+---
+
+# Graph stores
+
+`graph.stores` holds the **drivers** that can answer graphine's `GraphStore` contract, as factory
+closures. Your application type-hints `GraphStore` (or uses the `Graph` facade) and gets the default
+driver; which backend sits behind it (in-memory, a relational table, a graph database) is a
+registration here plus one config value.
+
+{/* registry-facts:start — generated from the #[IsRegistry] declaration by `splicewire:beam:docs:registries:scaffold`. Rerun the command; do not edit between these markers. */}
+
+- **Root:** `graph.stores`
+- **Entries:** `Closure`
+- **Duplicate keys:** Supersede — a later registration under a taken key replaces the earlier entry, in its place
+- **Population:** Optional — an empty registry is normal
+- **Order:** `100` (display order, ascending)
+- **Declared by:** `Rushing\Graphine\Laravel\GraphStoreManager`
+
+{/* registry-facts:end */}
+
+## What ships
+
+One driver, **`memory`**, the in-memory reference driver. It implements the structure and compute
+roles and the optional gating role, and it's the default until you configure another:
+`config('graphine.default')` (`GRAPHINE_DRIVER`, default `memory`).
+
+The relational driver family (`RelationalDriver`, `GovernedRelationalDriver`) is available too, but
+it isn't registered on its own: it needs a source describing your tables, so you register it under a
+name of your choosing. The `GraphStore` contract and the drivers come from the framework-free
+[`rushing/php-graphine`](https://github.com/stephenr85/php-graphine); this package adds the Laravel
+manager, the facade and the table-backed `AdjacencyListSource`.
+
+## Adding a driver
+
+`GraphStoreManager` is a Laravel `Manager`, so `extend()` works and is recorded in the registry:
+
+```php
+use Rushing\Graphine\Drivers\RelationalDriverFactory;
+use Rushing\Graphine\Laravel\GraphStoreManager;
+use Rushing\Graphine\Laravel\Sources\AdjacencyListSource;
+
+public function boot(): void
+{
+    $source = new AdjacencyListSource($this->app['db'], [
+        'nodes' => ['table' => 'circuit_nodes', 'key' => 'id', 'type' => 'type'],
+        'edges' => ['table' => 'circuit_edges', 'from' => 'source_node_id', 'to' => 'target_node_id'],
+    ]);
+
+    $this->app->make(GraphStoreManager::class)
+        ->extend('circuits', fn () => RelationalDriverFactory::make($source, 'circuits'));
+}
+```
+
+Then point `GRAPHINE_DRIVER` at `circuits`, or ask for it by name with `driver('circuits')`.
+`register('circuits', fn () => …)` is the same call. Two rules hold for every entry:
+
+- **It must be a closure.** Registering a built store is refused, because it would build every
+  driver at boot.
+- **The key is one segment.** A driver key is a `Manager` driver name, so `circuits` is legal and
+  `circuits.eu` is refused.
+
+Listing the registry's keys never builds a driver. `resolve('circuits')` returns the factory;
+`driver('circuits')` builds and memoizes the store.
+
+## Certifying a driver
+
+A driver you write yourself can inherit the package's whole contract suite by extending
+`Rushing\Graphine\Testing\GraphStoreConformance` and returning your driver from `createDriver()`.
+
+## Duplicates
+
+The policy is **supersede**: registering a taken name replaces the factory, which is how you repoint
+`memory` or any other driver name at a different backend.
+
+## Going deeper
+
+The source is
+[`GraphStoreManager`](https://github.com/stephenr85/laravel-graphine/blob/main/src/GraphStoreManager.php).
+The [laravel-graphine README](https://github.com/stephenr85/laravel-graphine#readme) covers the four
+store roles, the relational driver family and the algorithm kernels.
