@@ -115,7 +115,7 @@ config-driven `AdjacencyListSource` at it and let `RelationalDriverFactory` pick
 the driver member:
 
 ```php
-use Rushing\Graphine\Sources\AdjacencyListSource;
+use Rushing\Graphine\Laravel\Sources\AdjacencyListSource;
 use Rushing\Graphine\Drivers\RelationalDriverFactory;
 
 $source = new AdjacencyListSource($connectionResolver, [
@@ -123,7 +123,7 @@ $source = new AdjacencyListSource($connectionResolver, [
     'edges' => ['table' => 'circuit_edges', 'from' => 'source_node_id', 'to' => 'target_node_id'],
 ]);
 
-app(\Rushing\Graphine\GraphStoreManager::class)
+app(\Rushing\Graphine\Laravel\GraphStoreManager::class)
     ->extend('circuits', fn () => RelationalDriverFactory::make($source, 'circuits'));
 ```
 
@@ -161,7 +161,7 @@ never a concrete driver:
 public function __construct(private GraphStore $graph) {}   // default driver, from config
 
 // In your service provider:
-app(\Rushing\Graphine\GraphStoreManager::class)
+app(\Rushing\Graphine\Laravel\GraphStoreManager::class)
     ->extend('kg', fn () => new \App\Graph\Drivers\RelationalKgDriver(/* … */));
 
 // config/graphine.php:  'default' => env('GRAPHINE_DRIVER', 'kg'),
@@ -198,19 +198,31 @@ nothing, so it always passes.
 
 ## Layout
 
+This package is the Laravel layer. The contracts, value types, drivers, algorithm kernels and test
+kit come from the framework-free
+[`rushing/php-graphine`](https://github.com/stephenr85/php-graphine), so they keep the
+`Rushing\Graphine\` namespace; the classes here live under `Rushing\Graphine\Laravel\`.
+
 ```
-src/
+src/                            (Rushing\Graphine\Laravel\)
 ├── GraphStoreManager.php       Manager-driver hub — default 'memory' + extend()
 ├── GraphineServiceProvider.php
-├── Algorithms/                 Pure kernels — Kahn topo-sort, Tarjan SCC, components (no store)
-├── Contracts/                  GraphStore + role sub-contracts, the GraphSource seam, + value-type contracts (Node/Edge/…)
-├── Drivers/                    InMemoryDriver + the relational family (RelationalDriver, governed, factory)
-├── Dto/                        Node, Edge (pure topology), NodeId, Path, QueryResult
-├── Enums/                      Capability, QueryFormat, TraversalDirection
-├── Sources/                    AdjacencyListSource — graph any relational table by config
-└── Testing/                    GraphStoreConformance + SeamGuard (shipped test-kit)
+├── Facades/Graph.php           the Graph facade over the default store
+└── Sources/                    AdjacencyListSource — graph any relational table by config;
+                                RegistryGraphSource — the popcorn registry keyspace as a graph
 tests/                          the in-memory + relational drivers certify against the kit
 ```
+
+From `rushing/php-graphine` (`Rushing\Graphine\`): `Algorithms/`, `Contracts/`, `Drivers/`,
+`Dto/`, `Enums/` and `Testing/` (`GraphStoreConformance`, `SeamGuard`).
+
+## Registries
+
+This package declares one registry:
+
+- [`graph.stores`](docs/registries/graph.stores.mdx): the graph-store drivers behind the
+  `GraphStore` contract, as the factories that build them. The package registers `memory`, and
+  `extend()` registers here too.
 
 ## License
 
