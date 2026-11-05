@@ -76,8 +76,9 @@ A driver you write yourself can inherit the package's whole contract suite by ex
 
 ## Duplicates
 
-The policy is **supersede**: registering a taken name replaces the factory, which is how you repoint
-`memory` or any other driver name at a different backend.
+The [**duplicate-key policy**](/beam/docs/foundations/registries#key-policies) is
+**supersede**: registering a taken name replaces the factory, which is how you repoint `memory` or
+any other driver name at a different backend.
 
 ## Going deeper
 
