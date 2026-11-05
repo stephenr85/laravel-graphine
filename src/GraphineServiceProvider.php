@@ -6,6 +6,7 @@ use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 use Rushing\Graphine\Contracts\GraphStore;
 use Rushing\Graphine\Laravel\Facades\Graph;
+use Rushing\Popcorn\Registries\Registrant;
 
 /**
  * Package service provider. Binds the Manager as a singleton and aliases the
@@ -23,6 +24,11 @@ class GraphineServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        Registrant::scoped('rushing/laravel-graphine', $this->registerScoped(...));
+    }
+
+    private function registerScoped(): void
+    {
         $this->mergeConfigFrom(__DIR__.'/../config/graphine.php', 'graphine');
 
         $this->app->singleton(GraphStoreManager::class, fn ($app) => new GraphStoreManager($app));
@@ -32,6 +38,11 @@ class GraphineServiceProvider extends ServiceProvider
     }
 
     public function boot(): void
+    {
+        Registrant::scoped('rushing/laravel-graphine', $this->bootScoped(...));
+    }
+
+    private function bootScoped(): void
     {
         if (class_exists(AliasLoader::class)) {
             AliasLoader::getInstance()->alias('Graph', Graph::class);

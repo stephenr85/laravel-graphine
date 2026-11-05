@@ -83,7 +83,7 @@ class GraphStoreManager extends Manager implements Gated, Registry
         // `createMemoryDriver()` being found by convention is what lets `keys()` report it without
         // reflecting into the parent — and it means the shipped default and a consumer's driver are
         // read out of one place.
-        $this->register('memory', fn (): GraphStore => $this->createMemoryDriver(), by: self::class);
+        $this->register('memory', fn (): GraphStore => $this->createMemoryDriver(), by: 'rushing/laravel-graphine');
     }
 
     public function getDefaultDriver(): string
@@ -177,7 +177,8 @@ class GraphStoreManager extends Manager implements Gated, Registry
      */
     public function extend($driver, Closure $callback): static
     {
-        return $this->register($driver, $callback, by: 'extend');
+        // No $by: the caller's registrant scope names who extended the manager.
+        return $this->register($driver, $callback);
     }
 
     /**
