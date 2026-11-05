@@ -3,11 +3,13 @@
 use Rushing\Graphine\Contracts\GraphStore;
 use Rushing\Graphine\Drivers\InMemoryDriver;
 use Rushing\Graphine\Laravel\GraphStoreManager;
+use Rushing\Popcorn\Registries\Authorizer;
 use Rushing\Popcorn\Registries\IsRegistry;
 use Rushing\Popcorn\Registries\Key;
 use Rushing\Popcorn\Registries\OnKeyDuplicate;
 use Rushing\Popcorn\Registries\Registry;
 use Rushing\Popcorn\Registries\RegistryIndex;
+use Rushing\Popcorn\Registries\RegistryKey;
 
 it('is a Registry declaring root graph.stores', function () {
     $declaration = IsRegistry::of(GraphStoreManager::class);
@@ -80,4 +82,51 @@ it('routes an entry key through the index to this registry', function () {
 
     expect(app(RegistryIndex::class)->routeTo(Key::parse('graph.stores.circuits')))
         ->toBe(app(GraphStoreManager::class));
+});
+
+/*
+ * The authorizer reaches the composed store on both of the index's push edges (registry-kernel 20 D6),
+ * in 74's acceptance form: a deny-all authorizer meets an ability-carrying driver, read back through the
+ * manager's own public reads. The index pushes into the manager because it is `Gated`, and
+ * `ForwardsToRegistryStore` hands the authorizer to the held store, where the filter runs.
+ *
+ * Each test routes through the index first or last on purpose: a baked root is pending until the index
+ * hydrates it, and the push happens on hydration.
+ */
+it('is filtered by an authorizer the index installs after it holds the manager', function () {
+    $manager = app(GraphStoreManager::class);
+    $manager->register('closed', fn () => new InMemoryDriver, ability: 'graph.closed');
+
+    expect(app(RegistryIndex::class)->resolve('graph.stores'))->toBe($manager)
+        ->and($manager->has('closed'))->toBeTrue();
+
+    app(RegistryIndex::class)->authorizeWith(new class implements Authorizer
+    {
+        public function allows(string $ability, RegistryKey $key): bool
+        {
+            return false;
+        }
+    });
+
+    expect($manager->has('closed'))->toBeFalse()
+        ->and($manager->has('memory'))->toBeTrue()
+        ->and(array_map('strval', $manager->keys()))->toBe(['graph.stores.memory'])
+        ->and($manager->unfiltered()->has('closed'))->toBeTrue();
+});
+
+it('is filtered by an authorizer the index installed before it held the manager', function () {
+    app(RegistryIndex::class)->authorizeWith(new class implements Authorizer
+    {
+        public function allows(string $ability, RegistryKey $key): bool
+        {
+            return false;
+        }
+    });
+
+    $manager = app(GraphStoreManager::class);
+    $manager->register('closed', fn () => new InMemoryDriver, ability: 'graph.closed');
+
+    expect(app(RegistryIndex::class)->resolve('graph.stores'))->toBe($manager)
+        ->and($manager->has('closed'))->toBeFalse()
+        ->and($manager->unfiltered()->has('closed'))->toBeTrue();
 });

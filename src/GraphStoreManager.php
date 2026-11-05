@@ -8,8 +8,8 @@ use Illuminate\Support\Manager;
 use InvalidArgumentException;
 use Rushing\Graphine\Contracts\GraphStore;
 use Rushing\Graphine\Drivers\InMemoryDriver;
-use Rushing\Popcorn\Registries\Authorizer;
 use Rushing\Popcorn\Registries\BasicRegistry;
+use Rushing\Popcorn\Registries\ForwardsToRegistryStore;
 use Rushing\Popcorn\Registries\Gated;
 use Rushing\Popcorn\Registries\IsRegistry;
 use Rushing\Popcorn\Registries\Key;
@@ -39,7 +39,14 @@ use Rushing\Popcorn\Registries\RegistryKey;
  * This is the estate's foreign registry — the one that was already `extends Manager` before popcorn
  * existed, and so the one that tested whether the contract generalizes past the shapes it was designed
  * against. It does, and the cost is one held field: `Manager` keeps `__call` proxying and
- * `getDefaultDriver()`, {@see BasicRegistry} keeps the keyspace.
+ * `getDefaultDriver()`, {@see BasicRegistry} keeps the keyspace. The reads and the authorizer reach that
+ * field through {@see ForwardsToRegistryStore}: a trait rather than a base class, because this class
+ * already extends `Manager`.
+ *
+ * It is `Gated` even though graphine declares no `ability` on any driver: an ungated entry
+ * short-circuits before the authorizer is consulted, so this costs nothing today, and a registry that
+ * cannot receive the authorizer is one a host can never close (ticket 09 D7). The index pushes the
+ * authorizer here on both edges (ticket 20 D6).
  *
  * `register()` records the key in its own registry **before** delegating to `extend()`. That is what
  * makes `keys()` honest with no reflection: `Manager::getDrivers()` returns *resolved instances* and
@@ -68,6 +75,8 @@ use Rushing\Popcorn\Registries\RegistryKey;
 )]
 class GraphStoreManager extends Manager implements Gated, Registry
 {
+    use ForwardsToRegistryStore;
+
     private BasicRegistry $stores;
 
     public function __construct(Container $container)
@@ -123,50 +132,6 @@ class GraphStoreManager extends Manager implements Gated, Registry
         return $this;
     }
 
-    public function has(RegistryKey|string $key): bool
-    {
-        return $this->stores->has($key);
-    }
-
-    public function resolve(RegistryKey|string $key): mixed
-    {
-        return $this->stores->resolve($key);
-    }
-
-    public function tryResolve(RegistryKey|string $key): mixed
-    {
-        return $this->stores->tryResolve($key);
-    }
-
-    public function matches(RegistryKey|string $key): array
-    {
-        return $this->stores->matches($key);
-    }
-
-    public function keys(): array
-    {
-        return $this->stores->keys();
-    }
-
-    public function unfiltered(): Registry
-    {
-        return $this->stores->unfiltered();
-    }
-
-    /**
-     * {@see Gated} — the index pushes the host's authorizer down here on both edges (ticket 20 D6).
-     *
-     * Implemented even though graphine declares no `ability` on any driver: an ungated entry
-     * short-circuits before the authorizer is consulted, so this costs nothing today, and a registry
-     * that cannot receive the authorizer is one a host can never close (ticket 09 D7).
-     */
-    public function authorizeWith(?Authorizer $authorizer): static
-    {
-        $this->stores->authorizeWith($authorizer);
-
-        return $this;
-    }
-
     /**
      * `Manager::extend()`, routed through {@see register()} so the keyspace never misses a write.
      *
@@ -206,6 +171,17 @@ class GraphStoreManager extends Manager implements Gated, Registry
         }
 
         return $segments[0];
+    }
+
+    /**
+     * {@see ForwardsToRegistryStore}: the held store every forwarded read goes through.
+     *
+     * Protected, so an outside `->store()` call still falls through to `Manager::__call()` and the default
+     * driver, exactly as it did before this method existed.
+     */
+    protected function store(): BasicRegistry
+    {
+        return $this->stores;
     }
 
     protected function createMemoryDriver(): GraphStore
